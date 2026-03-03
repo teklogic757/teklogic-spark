@@ -9,22 +9,22 @@ Requirements for the current production-readiness milestone. Each maps to exactl
 
 ### Notifications
 
-- [ ] **NOTF-01**: New users receive a welcome email after account creation with organization-specific login guidance
-- [ ] **NOTF-02**: Idea submitters receive evaluation emails through the configured provider, with graceful fallback when delivery fails
-- [ ] **NOTF-03**: Admins receive a notification email for each new idea submission including submitter context and attachment presence
-- [ ] **NOTF-04**: Active contests can trigger a weekly digest summarizing leaderboard standings and recent top ideas
+- [x] **NOTF-01**: New users receive a welcome email after account creation with organization-specific login guidance
+- [x] **NOTF-02**: Idea submitters receive evaluation emails through the configured provider, with graceful fallback when delivery fails
+- [x] **NOTF-03**: Admins receive a notification email for each new idea submission including submitter context and attachment presence
+- [x] **NOTF-04**: Active contests can trigger a weekly digest summarizing leaderboard standings and recent top ideas
 
 ### Admin Experience
 
-- [ ] **ADMN-01**: Super admins can add a training video to the learning library by submitting a YouTube URL in the admin area
-- [ ] **ADMN-02**: Super admins can remove an existing training video from the learning library in the admin area
+- [x] **ADMN-01**: Super admins can add a training video to the learning library by submitting a YouTube URL in the admin area
+- [x] **ADMN-02**: Super admins can remove an existing training video from the learning library in the admin area
 
 ### Quality And Reliability
 
-- [ ] **QUAL-01**: Users get client-side validation on idea submission that mirrors the current server-side rules for required fields, lengths, and file restrictions
-- [ ] **QUAL-02**: Submission and admin mutation flows show clear loading and failure states while async work is in progress
-- [ ] **QUAL-03**: Production-facing request paths avoid noisy debug logging while preserving actionable error logging
-- [ ] **QUAL-04**: Sensitive admin mutations are audit-logged with actor, action, target, and timestamp
+- [x] **QUAL-01**: Users get client-side validation on idea submission that mirrors the current server-side rules for required fields, lengths, and file restrictions
+- [x] **QUAL-02**: Submission and admin mutation flows show clear loading and failure states while async work is in progress
+- [x] **QUAL-03**: Production-facing request paths avoid noisy debug logging while preserving actionable error logging
+- [x] **QUAL-04**: Sensitive admin mutations are audit-logged with actor, action, target, and timestamp
 
 ## v2 Requirements
 
@@ -57,16 +57,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NOTF-01 | Phase 2 | Pending |
-| NOTF-02 | Phase 2 | Pending |
-| NOTF-03 | Phase 2 | Pending |
-| NOTF-04 | Phase 3 | Pending |
-| ADMN-01 | Phase 3 | Pending |
-| ADMN-02 | Phase 3 | Pending |
-| QUAL-01 | Phase 1 | Pending |
-| QUAL-02 | Phase 1 | Pending |
-| QUAL-03 | Phase 4 | Pending |
-| QUAL-04 | Phase 4 | Pending |
+| NOTF-01 | Phase 2 | Complete |
+| NOTF-02 | Phase 2 | Complete |
+| NOTF-03 | Phase 2 | Complete |
+| NOTF-04 | Phase 3 | Complete |
+| ADMN-01 | Phase 3 | Complete |
+| ADMN-02 | Phase 3 | Complete |
+| QUAL-01 | Phase 1 | Complete |
+| QUAL-02 | Phase 1 | Complete |
+| QUAL-03 | Phase 4 | Complete |
+| QUAL-04 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 10 total
@@ -75,4 +75,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-03*
-*Last updated: 2026-03-03 after initial definition*
+*Last updated: 2026-03-03 after Phase 4 completion*
