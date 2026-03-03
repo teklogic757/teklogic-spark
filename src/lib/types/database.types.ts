@@ -302,6 +302,9 @@ export interface Database {
                 }
             }
         }
+        Views: {
+            [_ in never]: never
+        }
         Functions: {
             get_invite_by_token: {
                 Args: {
@@ -316,6 +319,12 @@ export interface Database {
                 }
                 Returns: void
             }
+        }
+        Enums: {
+            [_ in never]: never
+        }
+        CompositeTypes: {
+            [_ in never]: never
         }
     }
 }
