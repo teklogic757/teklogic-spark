@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: Production Readiness
-status: archived
-last_updated: "2026-03-03T23:10:00.000Z"
+milestone: v1.1
+milestone_name: Trust And Isolation Hardening
+status: planning
+last_updated: "2026-03-03T23:20:00.000Z"
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # State
@@ -18,15 +18,21 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-03)
 
 **Core value:** Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
-**Current focus:** Planning the next milestone after v1.0 Production Readiness
+**Current focus:** Defining milestone v1.1 Trust And Isolation Hardening
+
+## Current Position
+
+Phase: Not started (defining requirements)
+Plan: -
+Status: Defining requirements
+Last activity: 2026-03-03 - Milestone v1.1 started
 
 ## Status
 
-- v1.0 Production Readiness has been archived to `.planning/milestones/`
-- The shipped milestone delivered 4 phases, 10 plans, and 23 documented tasks
-- Phase archives remain in `.planning/phases/` for execution history
-- Repository verification still passes for the current codebase (`npm run lint`, `npm run build`)
-- No standalone `v1.0` milestone audit artifact was created before archive
+- v1.0 Production Readiness remains archived in `.planning/milestones/`
+- v1.1 planning is active with a corrective platform-hardening scope
+- The next roadmap starts at Phase 5 and targets scoring integrity, least-privilege access, submission decomposition, durable rate limiting, and test coverage
+- Repository verification for the shipped baseline still reflects the prior milestone (`npm run lint`, `npm run build`)
 
 ## Workflow
 
@@ -38,13 +44,16 @@ See: `.planning/PROJECT.md` (updated 2026-03-03)
 
 ## Next Command
 
-- `$gsd-new-milestone`
-- `$gsd-progress`
+- `$gsd-discuss-phase 5`
+- `$gsd-plan-phase 5`
 
-## Session
+## Accumulated Context
 
-- Stopped at: v1.0 milestone archived
-- Resume file: `.planning/MILESTONES.md`
+- Weighted rubric scoring is currently computed but not used as the canonical score for points
+- Dashboard reads need narrower privilege boundaries, especially around service-role usage and training-video fetches
+- The submit action is too coupled and should be decomposed behind clearer service boundaries
+- In-memory rate limiting is not adequate for multi-instance deployment targets
+- A test harness now needs to exist before expanding feature scope further
 
 ---
-*Last updated: 2026-03-03 after v1.0 milestone completion*
+*Last updated: 2026-03-03 after starting v1.1 milestone*

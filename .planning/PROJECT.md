@@ -8,6 +8,15 @@ Teklogic Spark AI is a multi-tenant web app that turns AI workshop momentum into
 
 Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
 
+## Current Milestone: v1.1 Trust And Isolation Hardening
+
+**Goal:** Restore trust in scoring, tighten tenant-safe access boundaries, and make critical submission flows easier to harden and verify.
+
+**Target features:**
+- Canonical weighted AI scoring drives persisted scores, points, and leaderboard behavior
+- Dashboard and training-video reads use least-privilege, tenant-safe data access patterns
+- Submission, rate limiting, and test infrastructure become production-safe and maintainable
+
 ## Requirements
 
 ### Validated
@@ -23,19 +32,20 @@ Organizations can reliably capture, score, and act on company-specific AI ideas 
 
 ### Active
 
-- [ ] Define the next production milestone goals and convert the current v2 ideas into concrete requirements
-- [ ] Add the highest-value collaboration feature set (voting and/or comments) without weakening tenant isolation
-- [ ] Expand analytics and campaign-management tooling now that the baseline production-readiness work is shipped
+- [ ] Make weighted rubric scoring the only score that affects persisted results and points
+- [ ] Reduce privileged data access on dashboard paths and preserve tenant boundaries for current and future content
+- [ ] Break the submission pipeline into testable, lower-risk units and replace in-memory rate limiting with a shared store
+- [ ] Establish an automated test baseline around scoring, isolation, and critical submission/workshop flows
 
 ### Out of Scope
 
 - Native mobile apps: the current product is web-first and already has mobile-specific web routes
-- Major new social features beyond the next milestone's chosen scope
+- Major new end-user collaboration or analytics features in this milestone: platform trust issues take priority first
 - Re-platforming away from Next.js or Supabase
 
 ## Context
 
-This is a brownfield Next.js 15 App Router application backed by Supabase for auth, Postgres data, and storage. The current repo now has a shipped production-readiness milestone covering stronger client validation, shared notification delivery, digest and training-content administration, and durable audit logging for privileged admin actions. A codebase map exists in `.planning/codebase/` and remains the structural reference for future planning. The immediate next step is defining the next milestone with fresh requirements and a new roadmap.
+This is a brownfield Next.js 15 App Router application backed by Supabase for auth, Postgres data, and storage. The current repo now has a shipped production-readiness milestone covering stronger client validation, shared notification delivery, digest and training-content administration, and durable audit logging for privileged admin actions. A codebase map exists in `.planning/codebase/` and remains the structural reference for future planning. The immediate next step is a corrective hardening milestone focused on score integrity, least-privilege data access, submission-path maintainability, durable abuse controls, and test coverage.
 
 ## Current State
 
@@ -43,12 +53,13 @@ This is a brownfield Next.js 15 App Router application backed by Supabase for au
 - Completed scope: 4 phases, 10 plans, 23 documented tasks
 - Operational baseline: `npm run lint` and `npm run build` pass, with only non-blocking existing warnings
 - Recent architectural additions: shared email contract, digest workflow, admin-managed training videos, admin audit-event persistence, sanitized server logging
+- New milestone focus: `v1.1 Trust And Isolation Hardening` addresses correctness drift, broader-than-needed service-role reads, submit-flow coupling, non-durable rate limiting, and missing automated tests
 
 ## Next Milestone Goals
 
-- Turn deferred collaboration ideas into validated scope with explicit requirement IDs
-- Decide whether the next milestone prioritizes engagement features, analytics, or campaign management
-- Preserve the current server-action and server-component architecture while extending tenant-safe product features
+- Make score calculation and point awards deterministic against the documented weighted rubric
+- Narrow privileged reads so tenant boundaries remain explicit and future schema changes do not create silent leaks
+- Create a safer platform baseline before adding new engagement or analytics surface area
 
 ## Constraints
 
@@ -67,6 +78,8 @@ This is a brownfield Next.js 15 App Router application backed by Supabase for au
 | Track `.planning/` in git | Planning artifacts should persist with the repository and support future GSD steps | [x] Good |
 | Skip separate domain research for initialization | The current codebase and docs provided enough local context to define the first milestone | [x] Good |
 | Build production-safety features before new engagement features | Reliability, auditability, and lower operational noise had to land before more surface-area expansion | [x] Good |
+| Prioritize a corrective hardening milestone before new end-user features | Score trust, tenant isolation, and deployment safety are product credibility issues, not optional cleanup | [ ] Pending |
+| Skip standalone research for v1.1 planning | This milestone is driven by concrete repo issues rather than a new domain or feature category | [x] Good |
 
 ---
-*Last updated: 2026-03-03 after v1.0 milestone*
+*Last updated: 2026-03-03 after starting v1.1 milestone*
