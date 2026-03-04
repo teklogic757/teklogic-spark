@@ -18,8 +18,8 @@
 
 ### Submission Pipeline
 
-- [ ] **SUBM-01**: Idea submission is split into composable server-side units for validation, context loading, AI evaluation, uploads, persistence, point updates, and notifications.
-- [ ] **SUBM-02**: Non-critical side effects (such as email dispatch) cannot cause a valid idea submission to be lost after persistence succeeds.
+- [x] **SUBM-01**: Idea submission is split into composable server-side units for validation, context loading, AI evaluation, uploads, persistence, point updates, and notifications.
+- [x] **SUBM-02**: Non-critical side effects (such as email dispatch) cannot cause a valid idea submission to be lost after persistence succeeds.
 
 ### Abuse Controls
 
@@ -66,8 +66,8 @@
 | SECU-01 | Phase 6 | Complete |
 | SECU-02 | Phase 6 | Complete |
 | SECU-03 | Phase 6 | Complete |
-| SUBM-01 | Phase 7 | Pending |
-| SUBM-02 | Phase 7 | Pending |
+| SUBM-01 | Phase 7 | Complete |
+| SUBM-02 | Phase 7 | Complete |
 | RATE-01 | Phase 8 | Pending |
 | RATE-02 | Phase 8 | Pending |
 | TEST-01 | Phase 9 | Pending |
@@ -86,4 +86,4 @@
 
 ---
 *Requirements defined: 2026-03-03*
-*Last updated: 2026-03-04 after queuing deployment security requirements for the next milestone*
+*Last updated: 2026-03-04 after completing Phase 7*

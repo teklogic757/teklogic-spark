@@ -29,7 +29,7 @@ Goal: Restore trust in scoring, reduce over-broad privileged reads, harden criti
 
 - [x] Phase 5: Score Integrity - completed 2026-03-04
 - [x] Phase 6: Tenant Boundary Tightening - completed 2026-03-04
-- [ ] Phase 7: Submission Flow Decomposition
+- [x] Phase 7: Submission Flow Decomposition - completed 2026-03-04
 - [ ] Phase 8: Durable Abuse Controls
 - [ ] Phase 9: Test Baseline And Join Cleanup
 
@@ -106,12 +106,12 @@ Expected planning themes:
 
 ## Next Up
 
-**Phase 7: Submission Flow Decomposition** - Plans are ready; execute the submit-flow decomposition.
+**Phase 8: Durable Abuse Controls** - Plan the durable rate-limiter backend before implementation.
 
-1. Review `.planning/phases/07-submission-flow-decomposition/*-PLAN.md`.
-2. Run `$gsd-execute-phase 7`.
-3. Manually smoke-test desktop, mobile, and workshop submit flows after each wave because this phase touches the highest-risk user funnel.
+1. Review the completed Phase 7 verification and manually smoke-test desktop, mobile, and workshop submission flows.
+2. Run `$gsd-plan-phase 8` to define the shared durable limiter backend and rollout path.
+3. After Phase 8 is planned, execute it before moving to the Phase 9 test baseline work.
 4. After v1.1 is complete, initialize the queued v1.2 deployment-security milestone before go-live hardening continues.
 
 ---
-*Last updated: 2026-03-04 after planning Phase 7*
+*Last updated: 2026-03-04 after completing Phase 7*
