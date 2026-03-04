@@ -106,12 +106,12 @@ Expected planning themes:
 
 ## Next Up
 
-**Phase 7: Submission Flow Decomposition** - Split the submit funnel into safer, testable units.
+**Phase 7: Submission Flow Decomposition** - Plans are ready; execute the submit-flow decomposition.
 
-1. Use `$gsd-discuss-phase 7` to refine the submit-flow decomposition approach.
-2. Use `$gsd-plan-phase 7` to create the execution plan.
-3. Manually smoke-test Phase 6 tenant routes in a real Supabase session before starting Phase 7 work.
-4. After v1.1 is complete, initialize the queued v1.2 deployment-security milestone before connecting the repo to Vercel.
+1. Review `.planning/phases/07-submission-flow-decomposition/*-PLAN.md`.
+2. Run `$gsd-execute-phase 7`.
+3. Manually smoke-test desktop, mobile, and workshop submit flows after each wave because this phase touches the highest-risk user funnel.
+4. After v1.1 is complete, initialize the queued v1.2 deployment-security milestone before go-live hardening continues.
 
 ---
-*Last updated: 2026-03-04 after queuing the post-v1.1 deployment security milestone*
+*Last updated: 2026-03-04 after planning Phase 7*
