@@ -40,6 +40,20 @@ export interface EmailResult {
     originalRecipient: EmailRecipient
 }
 
+export const summarizeEmailResult = (result: EmailResult): string => {
+    const recipientLabel = formatRecipientLabel(result.recipient)
+
+    if (result.status === 'delivered') {
+        return `Delivered via ${result.provider} to ${recipientLabel}`
+    }
+
+    if (result.status === 'skipped') {
+        return result.warning || result.error || `Skipped via ${result.provider}`
+    }
+
+    return result.error || `Failed via ${result.provider}`
+}
+
 export interface ContestDigestLeaderboardEntry {
     rank: number
     name: string
