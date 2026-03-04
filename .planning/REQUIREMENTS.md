@@ -12,9 +12,9 @@
 
 ### Tenant Isolation
 
-- [ ] **SECU-01**: Dashboard data reads use the least-privilege Supabase client needed for each dataset, with service-role access limited to explicitly justified server-only exceptions.
-- [ ] **SECU-02**: Training-video reads use a scoped query contract that remains safe if videos become organization-specific later.
-- [ ] **SECU-03**: Dashboard server code removes unsafe `as any` escapes where typed access patterns can express the real data boundary.
+- [x] **SECU-01**: Dashboard data reads use the least-privilege Supabase client needed for each dataset, with service-role access limited to explicitly justified server-only exceptions.
+- [x] **SECU-02**: Training-video reads use a scoped query contract that remains safe if videos become organization-specific later.
+- [x] **SECU-03**: Dashboard server code removes unsafe `as any` escapes where typed access patterns can express the real data boundary.
 
 ### Submission Pipeline
 
@@ -41,6 +41,14 @@
 - **ANLY-01**: Admins can view milestone-level analytics on idea volume, scoring trends, and engagement.
 - **CAMP-01**: Admins can configure time-boxed campaign windows with clear start and end rules.
 
+### Internet Deployment Security Hardening
+
+- [ ] **DSEC-01**: Production deployments load secrets from managed environment variables only, with development-only overrides explicitly disabled outside local environments.
+- [ ] **DSEC-02**: The repository excludes secrets, local caches, generated artifacts, and local agent tooling so a fresh remote clone is safe for CI and Vercel builds.
+- [ ] **DSEC-03**: Public-facing routes use production-safe security headers, cookie behavior, and redirect handling suitable for internet exposure.
+- [ ] **DSEC-04**: Admin and service-role capabilities remain explicitly constrained and documented so deployment does not widen privileged access by accident.
+- [ ] **DSEC-05**: A go-live checklist covers key rotation, test credential cleanup, Vercel environment setup, and final production verification steps.
+
 ## Out of Scope
 
 | Feature | Reason |
@@ -53,11 +61,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCOR-01 | Phase 5 | Pending |
-| SCOR-02 | Phase 5 | Pending |
-| SECU-01 | Phase 6 | Pending |
-| SECU-02 | Phase 6 | Pending |
-| SECU-03 | Phase 6 | Pending |
+| SCOR-01 | Phase 5 | Complete |
+| SCOR-02 | Phase 5 | Complete |
+| SECU-01 | Phase 6 | Complete |
+| SECU-02 | Phase 6 | Complete |
+| SECU-03 | Phase 6 | Complete |
 | SUBM-01 | Phase 7 | Pending |
 | SUBM-02 | Phase 7 | Pending |
 | RATE-01 | Phase 8 | Pending |
@@ -65,12 +73,17 @@
 | TEST-01 | Phase 9 | Pending |
 | TEST-02 | Phase 9 | Pending |
 | TEST-03 | Phase 9 | Pending |
+| DSEC-01 | Milestone v1.2 (queued) | Queued |
+| DSEC-02 | Milestone v1.2 (queued) | Queued |
+| DSEC-03 | Milestone v1.2 (queued) | Queued |
+| DSEC-04 | Milestone v1.2 (queued) | Queued |
+| DSEC-05 | Milestone v1.2 (queued) | Queued |
 
 **Coverage:**
-- v1 requirements: 12 total
+- v1 requirements: 17 total
 - Mapped to phases: 12
-- Unmapped: 0
+- Unmapped: 5
 
 ---
 *Requirements defined: 2026-03-03*
-*Last updated: 2026-03-03 after starting v1.1 milestone*
+*Last updated: 2026-03-04 after queuing deployment security requirements for the next milestone*

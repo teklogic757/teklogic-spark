@@ -44,6 +44,41 @@ async function getOrganizationAdminRecipients(supabaseAdmin: any, organizationId
     return [...new Set(recipients)]
 }
 
+async function incrementUserPointsWithFallback(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    userId: string,
+    currentTotalPoints: number,
+    canonicalScore: number
+) {
+    const { error: pointsError } = await (supabase.rpc as any)('increment_user_points', {
+        user_id: userId,
+        points_to_add: canonicalScore,
+    })
+
+    if (!pointsError) {
+        return
+    }
+
+    warnLog('submit.points_increment_failed', {
+        error: pointsError,
+        userId,
+        points: canonicalScore,
+    })
+
+    const { error: directUpdateError } = await (supabase
+        .from('users') as any)
+        .update({ total_points: currentTotalPoints + canonicalScore })
+        .eq('id', userId)
+
+    if (directUpdateError) {
+        warnLog('submit.points_fallback_failed', {
+            error: directUpdateError,
+            userId,
+            points: canonicalScore,
+        })
+    }
+}
+
 export async function submitIdea(prevState: any, formData: FormData) {
     const supabase = await createClient()
 
@@ -218,6 +253,8 @@ export async function submitIdea(prevState: any, formData: FormData) {
             criteria_scores: evaluation.criteria_scores,
             related_suggestions: evaluation.related_suggestions,
             key_benefits: evaluation.reframed_idea.key_benefits,
+            score_details: evaluation.canonical_score_details ?? null,
+            model_overall_score: evaluation.model_overall_score ?? null,
             evaluated_at: new Date().toISOString(),
         }
 
@@ -295,31 +332,12 @@ export async function submitIdea(prevState: any, formData: FormData) {
     }
 
     if (aiScore > 0 && user && userProfile) {
-        const { error: pointsError } = await (supabase.rpc as any)('increment_user_points', {
-            user_id: user.id,
-            points_to_add: aiScore,
-        })
-
-        if (pointsError) {
-            warnLog('submit.points_increment_failed', {
-                error: pointsError,
-                userId: user.id,
-                points: aiScore,
-            })
-
-            const { error: directUpdateError } = await (supabase
-                .from('users') as any)
-                .update({ total_points: ((userProfile as any).total_points || 0) + aiScore })
-                .eq('id', user.id)
-
-            if (directUpdateError) {
-                warnLog('submit.points_fallback_failed', {
-                    error: directUpdateError,
-                    userId: user.id,
-                    points: aiScore,
-                })
-            }
-        }
+        await incrementUserPointsWithFallback(
+            supabase,
+            user.id,
+            userProfile.total_points || 0,
+            aiScore
+        )
     }
 
     const evaluationRecipient = guestEmail || user?.email || null

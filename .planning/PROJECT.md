@@ -61,6 +61,15 @@ This is a brownfield Next.js 15 App Router application backed by Supabase for au
 - Narrow privileged reads so tenant boundaries remain explicit and future schema changes do not create silent leaks
 - Create a safer platform baseline before adding new engagement or analytics surface area
 
+## Queued Milestone After v1.1: v1.2 Internet Deployment Security Hardening
+
+**Goal:** Prepare the app for Vercel deployment and public-internet exposure without carrying local-only assumptions, weak secret handling, or avoidable operational risk into production.
+
+**Planned focus:**
+- Clean repository hygiene so remote clones and build systems only receive the files required to build and run
+- Enforce environment-managed secret handling and remove development-only overrides from production paths
+- Add explicit go-live hardening around auth, headers, rate limiting, logging, and privileged admin/service-role surfaces
+
 ## Constraints
 
 - **Tech stack**: Next.js 15, React 19, TypeScript, Supabase, and Tailwind are already in place; preserve the existing platform and patterns instead of re-architecting
@@ -82,4 +91,4 @@ This is a brownfield Next.js 15 App Router application backed by Supabase for au
 | Skip standalone research for v1.1 planning | This milestone is driven by concrete repo issues rather than a new domain or feature category | [x] Good |
 
 ---
-*Last updated: 2026-03-03 after starting v1.1 milestone*
+*Last updated: 2026-03-04 after queuing the post-v1.1 deployment security milestone*

@@ -303,7 +303,17 @@ export interface Database {
             }
         }
         Views: {
-            [_ in never]: never
+            user_leaderboard: {
+                Row: {
+                    user_id: string
+                    organization_id: string
+                    full_name: string | null
+                    job_role: string | null
+                    idea_count: number
+                    total_points: number
+                    last_submission: string | null
+                }
+            }
         }
         Functions: {
             get_invite_by_token: {

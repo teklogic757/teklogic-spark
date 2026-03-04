@@ -7,6 +7,7 @@
 
 - [x] **v1.0 Production Readiness** - Phases 1-4 (shipped 2026-03-03)
 - [ ] **v1.1 Trust And Isolation Hardening** - Phases 5-9 (planned 2026-03-03)
+- [ ] **v1.2 Internet Deployment Security Hardening** - queued after v1.1 completion (not yet roadmapped)
 
 ## Active Milestone
 
@@ -23,6 +24,14 @@ Goal: Restore trust in scoring, reduce over-broad privileged reads, harden criti
 | 7 | Submission Flow Decomposition | Split the submit funnel into safer, testable units with resilient side-effect boundaries | SUBM-01, SUBM-02 | 3 |
 | 8 | Durable Abuse Controls | Replace restart-prone in-memory limits with a shared limiter backend on critical entry points | RATE-01, RATE-02 | 3 |
 | 9 | Test Baseline And Join Cleanup | Add test tooling, cover critical regressions, and clean the workshop join smell | TEST-01, TEST-02, TEST-03 | 3 |
+
+### Active Phase Progress
+
+- [x] Phase 5: Score Integrity - completed 2026-03-04
+- [x] Phase 6: Tenant Boundary Tightening - completed 2026-03-04
+- [ ] Phase 7: Submission Flow Decomposition
+- [ ] Phase 8: Durable Abuse Controls
+- [ ] Phase 9: Test Baseline And Join Cleanup
 
 ### Phase Details
 
@@ -82,13 +91,27 @@ Archive files:
 
 </details>
 
+## Queued Milestone (Post-v1.1)
+
+**v1.2 Internet Deployment Security Hardening**
+
+Goal: Make the app safe to expose on the public internet and straightforward to deploy on Vercel without leaking secrets, carrying local-only tooling into deploys, or relying on private-network assumptions.
+
+Planned requirement focus: `DSEC-01` through `DSEC-05`
+
+Expected planning themes:
+- Repository and deployment hygiene
+- Secret and environment hardening
+- Public surface validation and go-live verification
+
 ## Next Up
 
-**Phase 5: Score Integrity** - Make weighted rubric scoring the single source of truth.
+**Phase 7: Submission Flow Decomposition** - Split the submit funnel into safer, testable units.
 
-1. Use `$gsd-discuss-phase 5` to refine the implementation approach.
-2. Use `$gsd-plan-phase 5` to create the execution plan directly.
-3. Execute Phase 5 before expanding scope to later phases.
+1. Use `$gsd-discuss-phase 7` to refine the submit-flow decomposition approach.
+2. Use `$gsd-plan-phase 7` to create the execution plan.
+3. Manually smoke-test Phase 6 tenant routes in a real Supabase session before starting Phase 7 work.
+4. After v1.1 is complete, initialize the queued v1.2 deployment-security milestone before connecting the repo to Vercel.
 
 ---
-*Last updated: 2026-03-03 after starting v1.1 milestone*
+*Last updated: 2026-03-04 after queuing the post-v1.1 deployment security milestone*

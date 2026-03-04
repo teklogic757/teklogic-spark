@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { StatsGrid } from '@/components/features/dashboard/StatsGrid'
@@ -13,127 +12,46 @@ import { TrainingResources } from '@/components/features/dashboard/TrainingResou
 import { PromptHubTeaser } from '@/components/features/dashboard/PromptHubTeaser'
 import { ContestBanner } from '@/components/features/contest/ContestBanner'
 import { PromptQuickSearch } from '@/components/features/prompts/PromptQuickSearch'
-import { ContestConfig } from '@/lib/types/database.types'
-import { trainingVideos as fallbackTrainingVideos } from '@/data/training-videos'
-import { toTrainingVideoListItem } from '@/lib/training-videos'
 import { errorLog } from '@/lib/server-log'
+import { getDashboardPageData, getTenantRequestContext } from '@/lib/dashboard-access'
 
 
 
 export default async function DashboardPage({ params }: { params: Promise<{ client_id: string }> }) {
     const { client_id } = await params
 
-    // Standard client for user-scoped operations (enforces RLS)
-    const supabase = await createClient()
+    const tenantContext = await getTenantRequestContext(client_id)
 
-    // Admin client for privileged operations (bypasses RLS)
-    // REQUIRED: Used to fetch Organization details which might be blocked by restrictive RLS
-    // policies for standard users, resolving the "Organization Not Found" redirect loop.
-    const adminClient = await createAdminClient()
-
-
-    // 1. Verify Authentication
-    // We strictly enforce authentication here. Next.js middleware should catch this,
-    // but this serves as a double-check.
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError) {
-        errorLog('dashboard.auth_failed', authError, { clientId: client_id })
-    }
-
-    if (!user) {
+    if (!tenantContext?.user) {
         redirect(`/${client_id}/login`)
     }
 
-
-    // 2. Organization Check
-    // uses adminClient to ensure we can find the organization even if RLS is broken/restrictive.
-    // This was the root cause of the "Infinite Redirect Loop".
-    const { data: organization, error: orgError } = await adminClient
-        .from('organizations')
-        .select('*')
-        .eq('slug', client_id)
-        .single()
-
-    if (orgError) {
-        errorLog('dashboard.organization_lookup_failed', orgError, { clientId: client_id })
-    }
-
-    if (!organization) {
-        redirect(`/${client_id}/login`)
-    }
-
-    // Explicitly cast or ensure type to avoid 'never' if inference fails
-    const org = organization as any // Quick fix for 'never' issue if types aren't aligning perfectly with adminClient
-
-    // 3. Verify User Belongs to This Organization
-    // SECURITY: Users must only access their own organization's dashboard
-    const { data: currentUserData } = await adminClient
-        .from('users')
-        .select('organization_id, role, total_points')
-        .eq('id', user.id)
-        .single()
-
-    if (!currentUserData) {
-        errorLog('dashboard.user_profile_missing', 'User profile missing', { userId: user.id })
-        redirect(`/login`)
-    }
-
-    // Type cast to handle TypeScript inference issues with admin client
-    const currentUser = currentUserData as { organization_id: string; role: string; total_points: number }
-
-    // If user is trying to access a different organization's dashboard, redirect them to their own
-    if (currentUser.organization_id !== org.id) {
-        const { data: userOrgData } = await adminClient
-            .from('organizations')
-            .select('slug')
-            .eq('id', currentUser.organization_id)
-            .single()
-
-        const userOrg = userOrgData as { slug: string } | null
-        if (userOrg?.slug) {
-            redirect(`/${userOrg.slug}/dashboard`)
-        } else {
-            redirect(`/login`)
+    if (tenantContext.redirectTo) {
+        if (tenantContext.redirectTo === '/login') {
+            errorLog('dashboard.user_profile_missing', 'User profile missing', { userId: tenantContext.user.id })
         }
+
+        redirect(tenantContext.redirectTo)
     }
 
-    const userRole = currentUser.role || 'user'
+    const dashboardData = await getDashboardPageData(tenantContext)
+    const {
+        tenant,
+        topIdeas,
+        userIdeas,
+        currentUserScore,
+        leaderboardEntries,
+        trainingResourceVideos,
+    } = dashboardData
+    const { organization: org, user, userProfile } = tenant
+    const userRole = userProfile.role || 'user'
 
-    // 4. Fetch Top 10 Ideas (with all fields for modal display)
-    const { data: topIdeas } = await supabase
-        .from('ideas')
-        .select('*, users(full_name, job_role)')
-        .eq('organization_id', org.id)
-        .order('ai_score', { ascending: false })
-        .limit(10)
-
-    // 5. Fetch User's Ideas (with all fields for modal display)
-    const { data: fetchedIdeas } = await supabase
-        .from('ideas')
-        .select('*, users(full_name, job_role)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-    const userIdeas = fetchedIdeas || []
-
-    // 6. Fetch Leaderboard Users (users in this org sorted by total_points)
-    const { data: leaderboardUsers } = await adminClient
-        .from('users')
-        .select('id, full_name, job_role, total_points')
-        .eq('organization_id', org.id)
-        .eq('is_active', true)
-        .order('total_points', { ascending: false })
-        .limit(10)
-
-    const { data: trainingVideoRows } = await adminClient
-        .from('training_videos')
-        .select('id, title, youtube_url, thumbnail_url')
-        .order('created_at', { ascending: false })
-
-    const trainingResourceVideos = trainingVideoRows && trainingVideoRows.length > 0
-        ? trainingVideoRows.map(toTrainingVideoListItem)
-        : fallbackTrainingVideos
+    const leaderboardUsers = leaderboardEntries.map(entry => ({
+        id: entry.id,
+        full_name: entry.fullName,
+        job_role: entry.jobRole,
+        total_points: entry.totalPoints,
+    }))
 
     return (
         <div className="flex min-h-screen flex-col bg-[#00080D]">
@@ -161,7 +79,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ clie
                         <ContestBanner
                             contestStartsAt={org.contest_starts_at}
                             contestEndsAt={org.contest_ends_at}
-                            contestConfig={org.contest_config as ContestConfig | null}
+                            contestConfig={org.contest_config}
                         />
 
                         <div className="hidden md:flex flex-col items-end mr-2">
@@ -218,7 +136,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ clie
                 </div>
 
                 {/* Stats Grid */}
-                <StatsGrid ideasCount={userIdeas.length} contestEndsAt={org.contest_ends_at} totalPoints={currentUser.total_points || 0} />
+                <StatsGrid ideasCount={userIdeas.length} contestEndsAt={org.contest_ends_at} totalPoints={currentUserScore?.totalPoints || 0} />
 
                 {/* Training Resources & Prompt Hub */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
