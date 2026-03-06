@@ -91,6 +91,20 @@ export function createSupabaseMock(options: CreateSupabaseMockOptions = {}) {
           },
         }
       },
+      then: (
+        onFulfilled?: (value: QueryResult) => unknown,
+        onRejected?: (reason: unknown) => unknown
+      ) => {
+        const execute = async (): Promise<QueryResult> => {
+          if (!behavior.rows) {
+            return { data: [], error: null }
+          }
+
+          return { data: applyFilters(behavior.rows, filters), error: null }
+        }
+
+        return execute().then(onFulfilled, onRejected)
+      },
     }
 
     return query
