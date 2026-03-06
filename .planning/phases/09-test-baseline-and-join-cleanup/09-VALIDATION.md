@@ -42,8 +42,8 @@ created: 2026-03-06
 | 9-01-02 | 01 | 1 | TEST-01 | smoke | `npm run test:ci` | OK | green |
 | 9-02-01 | 02 | 2 | TEST-02 | unit | `npm run test -- --run src/lib/score.test.ts src/lib/dashboard-access.test.ts src/lib/submit-flow.test.ts` | OK | green |
 | 9-02-02 | 02 | 2 | TEST-02 | integration-lite | `npm run test:ci` | OK | green |
-| 9-03-01 | 03 | 3 | TEST-03 | unit | `npm run test -- --run src/app/join/actions.test.ts` | OK | pending |
-| 9-03-02 | 03 | 3 | TEST-03 | smoke | `npm run test:ci && npm run build` | OK | pending |
+| 9-03-01 | 03 | 3 | TEST-03 | unit | `npm run test -- --run src/app/join/actions.test.ts` | OK | green |
+| 9-03-02 | 03 | 3 | TEST-03 | smoke | `npm run test:ci && npm run build` | OK | green |
 
 *Status: pending = not yet executed, green = passing, red = failing*
 
