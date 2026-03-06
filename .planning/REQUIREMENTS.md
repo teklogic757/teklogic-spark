@@ -28,7 +28,7 @@
 
 ### Quality Safety Net
 
-- [ ] **TEST-01**: The repository includes an automated test runner and scripts that can execute the app's test suite in local development and CI.
+- [x] **TEST-01**: The repository includes an automated test runner and scripts that can execute the app's test suite in local development and CI.
 - [ ] **TEST-02**: Automated tests cover score canonicalization, tenant-safe dashboard access, and the critical submission flow's success/failure boundaries.
 - [ ] **TEST-03**: The workshop join flow removes redundant query filters and has regression coverage or focused verification documentation.
 
@@ -70,7 +70,7 @@
 | SUBM-02 | Phase 7 | Complete |
 | RATE-01 | Phase 8 | Pending |
 | RATE-02 | Phase 8 | Pending |
-| TEST-01 | Phase 9 | Pending |
+| TEST-01 | Phase 9 | Complete |
 | TEST-02 | Phase 9 | Pending |
 | TEST-03 | Phase 9 | Pending |
 | DSEC-01 | Milestone v1.2 (queued) | Queued |
