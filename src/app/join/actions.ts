@@ -3,6 +3,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { getClientIpRateLimitIdentifier, rateLimitAction } from '@/lib/rate-limiter'
 import { SignupSchema, validateInput } from '@/lib/validators'
 
 type JoinActionState = {
@@ -36,14 +37,20 @@ export async function joinWorkshop(prevState: JoinActionState | null, formData: 
         return { error: 'Invalid code format' }
     }
 
+    const clientIp = await getClientIpRateLimitIdentifier()
+    const rateLimitResult = await rateLimitAction('joinWorkshop', clientIp)
+    if (rateLimitResult) {
+        return { error: rateLimitResult.error }
+    }
+
     const supabase = await createClient()
+    const normalizedCode = code.toUpperCase()
 
     // 1. Validate Code
     const { data: workshop, error } = await supabase
         .from('workshop_access_codes')
         .select('id, organization_id, code, is_active, expires_at')
-        .eq('code', code.toUpperCase())
-        .eq('code', code.toUpperCase())
+        .eq('code', normalizedCode)
         .single()
 
     const workshopData = workshop as WorkshopRecord | null
@@ -62,7 +69,7 @@ export async function joinWorkshop(prevState: JoinActionState | null, formData: 
 
     // 2. Set Session Cookie (Workshop Access Token)
     // We try to sign in anonymously. If it fails (e.g. disabled in Supabase), we proceed with just the cookie.
-    const { data: { user }, error: authError } = await supabase.auth.signInAnonymously()
+    const { error: authError } = await supabase.auth.signInAnonymously()
 
     if (authError) {
         console.warn('Anon Auth Warning (proceeding with cookie only):', authError.message)
