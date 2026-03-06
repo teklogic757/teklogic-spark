@@ -2,14 +2,24 @@ import 'server-only'
 
 import { cookies } from 'next/headers'
 
-import { evaluateIdea, generateEvaluationEmail, type IdeaSubmission, type OrganizationContext } from '@/lib/ai-evaluator'
 import {
-    sendAdminNotification,
-    sendEvaluationEmail,
+    evaluateIdea,
+    generateEvaluationEmail,
+    type EvaluationResult,
+    type IdeaSubmission,
+    type OrganizationContext,
+} from '@/lib/ai-evaluator'
+import {
+    sendCombinedIdeaReviewEmail,
     summarizeEmailResult,
     type EmailResult,
 } from '@/lib/email'
-import { rateLimitAction } from '@/lib/rate-limiter'
+import { findRelevantRedditLinks } from '@/lib/reddit-links'
+import {
+    buildScopedRateLimitIdentifier,
+    getClientIpRateLimitIdentifier,
+    rateLimitAction,
+} from '@/lib/rate-limiter'
 import { errorLog, warnLog } from '@/lib/server-log'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { IdeaSubmissionSchema, validateFileUpload, validateInput } from '@/lib/validators'
@@ -62,6 +72,7 @@ type SubmitterContext = {
     user: AuthenticatedUser | null
     profile: SubmitUserProfile | null
     organizationId: string
+    rateLimitIdentifier: string | null
     name: string
     role: string
     aiContext: string
@@ -73,7 +84,9 @@ type SubmissionEvaluation = {
     aiReframedText: string | null
     aiAnalysisJson: Record<string, unknown> | null
     evaluationSummary: string
-    emailHtml: string
+    emailSubject: string | null
+    ideaSubmission: IdeaSubmission
+    fullEvaluation: EvaluationResult | null
 }
 
 type PreparedSubmit = {
@@ -212,7 +225,7 @@ const resolveSubmitter = async (
     }
 
     if (authenticatedUser && !isWorkshopGuest) {
-        const rateLimitResult = rateLimitAction('submitIdea', authenticatedUser.id)
+        const rateLimitResult = await rateLimitAction('submitIdea', `user:${authenticatedUser.id}`)
         if (rateLimitResult) {
             return { ok: false, error: rateLimitResult.error }
         }
@@ -227,6 +240,7 @@ const resolveSubmitter = async (
             user: authenticatedUser,
             profile,
             organizationId: profile.organization_id,
+            rateLimitIdentifier: `user:${authenticatedUser.id}`,
             name: profile.full_name || 'Unknown',
             role: profile.job_role || 'Employee',
             aiContext: profile.ai_context || '',
@@ -238,11 +252,22 @@ const resolveSubmitter = async (
         return { ok: false, error: 'Workshop session expired.' }
     }
 
+    const clientIp = await getClientIpRateLimitIdentifier()
+    const guestRateLimitIdentifier = buildScopedRateLimitIdentifier(
+        `workshop:${workshopOrgId}`,
+        clientIp
+    )
+    const guestRateLimitResult = await rateLimitAction('submitIdeaGuest', guestRateLimitIdentifier)
+    if (guestRateLimitResult) {
+        return { ok: false, error: guestRateLimitResult.error }
+    }
+
     return {
         kind: 'workshop_guest',
         user: null,
         profile: null,
         organizationId: workshopOrgId,
+        rateLimitIdentifier: guestRateLimitIdentifier,
         name: input.guestName || 'Workshop Guest',
         role: 'Workshop Participant',
         aiContext: '',
@@ -315,12 +340,17 @@ const evaluateSubmission = async (
             aiAnalysisJson: {
                 criteria_scores: evaluation.criteria_scores,
                 related_suggestions: evaluation.related_suggestions,
+                coaching_feedback: evaluation.coaching_feedback,
+                improvement_checklist: evaluation.improvement_checklist,
+                resource_topics: evaluation.resource_topics,
                 key_benefits: evaluation.reframed_idea.key_benefits,
                 score_details: evaluation.canonical_score_details ?? null,
                 model_overall_score: evaluation.model_overall_score ?? null,
                 evaluated_at: new Date().toISOString(),
             },
-            emailHtml: generateEvaluationEmail(ideaSubmission, evaluation, submitter.name || 'there'),
+            emailSubject: `${evaluation.overall_score >= 80 ? 'Great job' : evaluation.overall_score >= 60 ? 'Idea review' : 'Needs work'}: "${input.title}" scored ${evaluation.overall_score}/100`,
+            ideaSubmission,
+            fullEvaluation: evaluation,
         }
     } catch (error) {
         warnLog(
@@ -338,7 +368,9 @@ const evaluateSubmission = async (
             evaluationSummary: route === 'mobile'
                 ? 'Your idea has been saved and will be reviewed.'
                 : 'AI Evaluation unavailable at this time. Your idea has been saved and will be reviewed manually.',
-            emailHtml: '',
+            emailSubject: null,
+            ideaSubmission,
+            fullEvaluation: null,
         }
     }
 }
@@ -358,6 +390,16 @@ export const prepareSubmit = async (
 
     if (isSubmitError(submitter)) {
         return submitter
+    }
+
+    if (input.attachment) {
+        const attachmentRateLimitResult = await rateLimitAction(
+            'submitIdeaAttachment',
+            submitter.rateLimitIdentifier
+        )
+        if (attachmentRateLimitResult) {
+            return { ok: false, error: attachmentRateLimitResult.error }
+        }
     }
 
     const organization = await loadOrganization(supabaseAdmin, submitter.organizationId, route, input.clientId)
@@ -482,6 +524,10 @@ export const persistIdeaSubmission = async (
         return attachmentUpload
     }
 
+    const submissionStatus = prepared.evaluation.aiAnalysisJson
+        ? (prepared.evaluation.aiScore <= 35 ? 'needs_improvement' : 'processed')
+        : 'new'
+
     const payload = {
         organization_id: prepared.organization.id,
         user_id: prepared.submitter.user?.id || null,
@@ -493,7 +539,7 @@ export const persistIdeaSubmission = async (
         department: prepared.input.department,
         problem_statement: prepared.input.problemStatement,
         proposed_solution: prepared.input.proposedSolution,
-        status: (prepared.evaluation.aiAnalysisJson ? 'processed' : 'new') as 'new' | 'processed',
+        status: submissionStatus,
         ai_score: prepared.evaluation.aiScore,
         ai_reframed_text: prepared.evaluation.aiReframedText,
         ai_feedback: prepared.evaluation.evaluationSummary,
@@ -586,66 +632,56 @@ export const runPostPersist = async (
     persisted: PersistedSubmit
 ): Promise<PostPersistOutcome[]> => {
     const outcomes: PostPersistOutcome[] = []
-    const evaluationRecipient = prepared.submitter.email
+    const adminRecipients = await getOrganizationAdminRecipients(
+        prepared.supabaseAdmin,
+        prepared.organization.id,
+        prepared.route
+    )
+    const userRecipient = prepared.submitter.email?.trim() || null
 
-    if (prepared.evaluation.emailHtml && persisted.aiScore > 0 && evaluationRecipient) {
+    if (prepared.evaluation.fullEvaluation && prepared.evaluation.emailSubject && persisted.aiScore > 0 && userRecipient) {
         try {
-            const result = await sendEvaluationEmail(
-                evaluationRecipient,
-                prepared.submitter.name,
-                prepared.input.title,
-                persisted.aiScore,
-                prepared.evaluation.emailHtml
+            const redditLinks = await findRelevantRedditLinks({
+                title: prepared.input.title,
+                department: prepared.input.department,
+                problemStatement: prepared.input.problemStatement,
+                proposedSolution: prepared.input.proposedSolution,
+                resourceTopics: prepared.evaluation.fullEvaluation.resource_topics,
+                maxLinks: 5,
+            })
+
+            const reviewHtml = generateEvaluationEmail(
+                prepared.evaluation.ideaSubmission,
+                prepared.evaluation.fullEvaluation,
+                prepared.submitter.name || 'there',
+                {
+                    externalLinks: redditLinks.map((link) => ({
+                        title: link.title,
+                        url: link.url,
+                        source: link.source,
+                    })),
+                }
             )
-            outcomes.push(toPostPersistOutcome(`Evaluation Email: ${prepared.input.title}`, result))
+
+            const result = await sendCombinedIdeaReviewEmail({
+                to: userRecipient,
+                bcc: adminRecipients.length > 0 ? adminRecipients : undefined,
+                subject: prepared.evaluation.emailSubject,
+                html: reviewHtml,
+            })
+            outcomes.push(toPostPersistOutcome(`Idea Review Email: ${prepared.input.title}`, result))
         } catch (error) {
             outcomes.push({
-                label: `Evaluation Email: ${prepared.input.title}`,
+                label: `Idea Review Email: ${prepared.input.title}`,
                 status: 'failed',
                 detail: error instanceof Error ? error.message : 'Unknown email exception',
             })
         }
-    } else if (prepared.evaluation.emailHtml && persisted.aiScore > 0) {
+    } else if (prepared.evaluation.emailSubject && persisted.aiScore > 0) {
         outcomes.push({
-            label: `Evaluation Email: ${prepared.input.title}`,
+            label: `Idea Review Email: ${prepared.input.title}`,
             status: 'skipped',
             detail: 'No submitter email available',
-        })
-    }
-
-    try {
-        const adminRecipients = await getOrganizationAdminRecipients(
-            prepared.supabaseAdmin,
-            prepared.organization.id,
-            prepared.route
-        )
-
-        const result = await sendAdminNotification(
-            prepared.input.title,
-            prepared.submitter.name,
-            prepared.submitter.email || 'No email provided',
-            prepared.organization.name,
-            prepared.input.department,
-            prepared.input.problemStatement,
-            prepared.input.proposedSolution,
-            persisted.aiScore,
-            prepared.input.attachmentDescription,
-            persisted.attachmentBuffer && persisted.attachmentFilename && persisted.attachmentContentType
-                ? {
-                    filename: persisted.attachmentFilename,
-                    content: persisted.attachmentBuffer,
-                    contentType: persisted.attachmentContentType,
-                }
-                : null,
-            adminRecipients.length > 0 ? adminRecipients : undefined
-        )
-
-        outcomes.push(toPostPersistOutcome(`Admin Notification: ${prepared.input.title}`, result))
-    } catch (error) {
-        outcomes.push({
-            label: `Admin Notification: ${prepared.input.title}`,
-            status: 'failed',
-            detail: error instanceof Error ? error.message : 'Unknown email exception',
         })
     }
 

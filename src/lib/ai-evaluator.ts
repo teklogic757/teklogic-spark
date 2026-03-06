@@ -83,8 +83,17 @@ export interface EvaluationResult {
         rationale: string
     }[]
     evaluation_summary: string
+    coaching_feedback: string
+    improvement_checklist: string[]
+    resource_topics: string[]
     model_overall_score?: number | null
     canonical_score_details?: CanonicalScoreDetails
+}
+
+export interface ExternalResourceLink {
+    title: string
+    url: string
+    source: string
 }
 
 export interface ExtractedIdea {
@@ -93,6 +102,89 @@ export interface ExtractedIdea {
     problem_statement: string
     proposed_solution: string
     description: string
+}
+
+const GENERIC_IDEA_PATTERNS = [
+    /\bchatbot(s)?\b/i,
+    /\bvoice agent(s)?\b/i,
+    /\bivr\b/i,
+    /\bemail (automation|response|sorting|triage)\b/i,
+    /\bcalendar (bot|automation|scheduler|scheduling)\b/i,
+    /\bcrm automation\b/i,
+    /\bdata entry automation\b/i,
+    /\breport(ing)? automation\b/i,
+    /\bsocial media (scheduler|automation|posting)\b/i,
+]
+
+function getCriteriaScore(
+    criteriaScores: EvaluationResult['criteria_scores'],
+    criterionName: string
+): number {
+    return criteriaScores[criterionName]?.score ?? 0
+}
+
+function isLikelyGenericIdea(idea: IdeaSubmission): boolean {
+    const combinedText = [
+        idea.title,
+        idea.department,
+        idea.problem_statement,
+        idea.proposed_solution,
+        idea.description,
+    ].filter(Boolean).join(' ')
+
+    return GENERIC_IDEA_PATTERNS.some((pattern) => pattern.test(combinedText))
+}
+
+function applyScoreGuardrails(
+    idea: IdeaSubmission,
+    evaluation: EvaluationResult
+): number {
+    const originality = getCriteriaScore(evaluation.criteria_scores, 'Originality')
+    const companySpecificity = getCriteriaScore(evaluation.criteria_scores, 'Company Specificity')
+    const clarity = getCriteriaScore(evaluation.criteria_scores, 'Clarity')
+    const isGeneric = isLikelyGenericIdea(idea)
+
+    // Generic ideas should usually land in 10-35 unless they show real specificity.
+    if (isGeneric && (originality < 55 || companySpecificity < 55)) {
+        return Math.min(35, Math.max(10, evaluation.overall_score))
+    }
+
+    // Vague low-clarity ideas should not drift into "good" ranges.
+    if (clarity < 45 && evaluation.overall_score > 55) {
+        return 55
+    }
+
+    // If idea is weak on originality and specificity together, keep it below 60.
+    if (originality < 50 && companySpecificity < 50 && evaluation.overall_score >= 60) {
+        return 59
+    }
+
+    // Ideas that are both unclear and unoriginal should remain in the weak range.
+    if ((originality < 45 && clarity < 45) || (companySpecificity < 40 && clarity < 45)) {
+        return Math.min(35, Math.max(10, evaluation.overall_score))
+    }
+
+    return evaluation.overall_score
+}
+
+function normalizeEvaluationResult(result: EvaluationResult): EvaluationResult {
+    const fallbackChecklist = [
+        'Name one repeated task and estimate hours lost weekly.',
+        'Identify the internal system where this workflow starts.',
+        'Define one measurable success metric after rollout.',
+    ]
+
+    return {
+        ...result,
+        coaching_feedback: result.coaching_feedback?.trim()
+            || 'Good start. Make the problem more specific and measurable before the next submission.',
+        improvement_checklist: Array.isArray(result.improvement_checklist) && result.improvement_checklist.length > 0
+            ? result.improvement_checklist.slice(0, 5)
+            : fallbackChecklist,
+        resource_topics: Array.isArray(result.resource_topics)
+            ? result.resource_topics.slice(0, 5).map((topic) => topic.trim()).filter(Boolean)
+            : [],
+    }
 }
 
 /**
@@ -172,7 +264,8 @@ WRITING STYLE:
 1. Write at a 6th-grade reading level. Use simple words. Keep sentences short.
 2. Be honest but constructive. If an idea is generic, say so kindly.
 3. Keep ALL text brief. Get to the point fast.
-4. Suggest how to make generic ideas more company-specific.${brandVoiceInstruction}${industryContext}${customerContext}${userContextInstruction}
+4. Suggest how to make generic ideas more company-specific.
+5. For weak ideas, explain clearly what is missing and what to improve next.${brandVoiceInstruction}${industryContext}${customerContext}${userContextInstruction}
 
 Your goal: Identify and reward truly creative, company-specific ideas while being honest about generic ones.`
 
@@ -213,23 +306,23 @@ IMPORTANT SCORING REMINDERS:
   "criteria_scores": {
     "Originality": {
       "score": <number 0-100 - generic ideas score 30 or below>,
-      "reasoning": "<ONE short sentence, max 15 words>"
+      "reasoning": "<ONE short sentence, max 25 words, mention what is generic or novel>"
     },
     "Impact Potential": {
       "score": <number 0-100>,
-      "reasoning": "<ONE short sentence, max 15 words>"
+      "reasoning": "<ONE short sentence, max 25 words, mention likely business effect>"
     },
     "Company Specificity": {
       "score": <number 0-100 - could this work for ANY company? Then score low>,
-      "reasoning": "<ONE short sentence, max 15 words>"
+      "reasoning": "<ONE short sentence, max 25 words, mention company fit gaps>"
     },
     "Feasibility": {
       "score": <number 0-100>,
-      "reasoning": "<ONE short sentence, max 15 words>"
+      "reasoning": "<ONE short sentence, max 25 words, mention implementation realism>"
     },
     "Clarity": {
       "score": <number 0-100>,
-      "reasoning": "<ONE short sentence, max 15 words>"
+      "reasoning": "<ONE short sentence, max 25 words, mention missing details if vague>"
     }
   },
   "reframed_idea": {
@@ -253,7 +346,17 @@ IMPORTANT SCORING REMINDERS:
       "rationale": "<why it helps - max 10 words>"
     }
   ],
-  "evaluation_summary": "<Honest assessment. If generic, say so kindly and suggest how to improve. Max 25 words.>"
+  "evaluation_summary": "<Honest assessment with one clear reason for the score and one concrete next improvement. Max 45 words.>"
+  "coaching_feedback": "<2-3 short sentences coaching the submitter on how to improve this specific idea. Mention what is missing and what to add next. Max 65 words.>",
+  "improvement_checklist": [
+    "<actionable item, 6-14 words>",
+    "<actionable item, 6-14 words>",
+    "<actionable item, 6-14 words>"
+  ],
+  "resource_topics": [
+    "<short topic phrase to find similar automations online>",
+    "<short topic phrase to find similar automations online>"
+  ]
 }
 \`\`\`
 
@@ -275,7 +378,8 @@ Calculate overall_score as weighted average. BE STRICT - most ideas should score
             throw new Error('No response from AI')
         }
 
-        const result = JSON.parse(content) as EvaluationResult
+        const rawResult = JSON.parse(content) as EvaluationResult
+        const result = normalizeEvaluationResult(rawResult)
 
         const canonicalScoreDetails = computeCanonicalWeightedScore(
             STANDARD_CRITERIA,
@@ -286,6 +390,7 @@ Calculate overall_score as weighted average. BE STRICT - most ideas should score
         result.model_overall_score = canonicalScoreDetails.modelOverallScore
         result.overall_score = canonicalScoreDetails.score
         result.canonical_score_details = canonicalScoreDetails
+        result.overall_score = applyScoreGuardrails(idea, result)
 
         return result
 
@@ -336,11 +441,23 @@ function buildOrgContextString(org: OrganizationContext): string {
 export function generateEvaluationEmail(
     idea: IdeaSubmission,
     evaluation: EvaluationResult,
-    userName: string
+    userName: string,
+    options?: {
+        externalLinks?: ExternalResourceLink[]
+    }
 ): string {
+    const isWeakIdea = evaluation.overall_score < 60
+    const primarySuggestion = evaluation.related_suggestions[0]
+    const externalLinks = options?.externalLinks ?? []
     const scoreColor = evaluation.overall_score >= 80 ? '🟢' :
         evaluation.overall_score >= 60 ? '🟡' :
             evaluation.overall_score >= 40 ? '🟠' : '🔴'
+    const scoreHeaderText = isWeakIdea
+        ? 'Your AI idea review is ready'
+        : 'Your AI idea evaluation is complete'
+    const introCopy = isWeakIdea
+        ? 'Thanks for submitting your idea. This one scored in the weak range, so the notes below focus on why and how to improve it.'
+        : 'Thank you for submitting your automation idea. Here is your AI evaluation and how to improve it further.'
 
     return `
 <!DOCTYPE html>
@@ -366,13 +483,13 @@ export function generateEvaluationEmail(
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎉 Your AI Idea Evaluation is Complete!</h1>
+            <h1>${scoreHeaderText}</h1>
             <div class="score-badge">${scoreColor} ${evaluation.overall_score}/100</div>
         </div>
 
         <div class="content">
             <p>Hi ${userName},</p>
-            <p>Thank you for submitting your automation idea! Our AI has completed a comprehensive evaluation. Here's what we found:</p>
+            <p>${introCopy}</p>
 
             <div class="section">
                 <div class="section-title">📝 Your Original Idea</div>
@@ -380,8 +497,32 @@ export function generateEvaluationEmail(
                 <p>${idea.description}</p>
             </div>
 
+            ${isWeakIdea ? `
             <div class="section">
-                <div class="section-title">✨ Enhanced Version</div>
+                <div class="section-title">⚠️ Why This Scored Low</div>
+                <p>${evaluation.evaluation_summary}</p>
+            </div>
+            ` : ''}
+
+            ${isWeakIdea && primarySuggestion ? `
+            <div class="section">
+                <div class="section-title">🧭 Stronger Direction To Try Next</div>
+                <strong>${primarySuggestion.title}</strong>
+                <p>${primarySuggestion.description}</p>
+                <p style="font-style: italic; color: #666;">Why this is stronger: ${primarySuggestion.rationale}</p>
+            </div>
+            ` : ''}
+
+            <div class="section">
+                <div class="section-title">Coaching Notes</div>
+                <p>${evaluation.coaching_feedback}</p>
+                <ul class="benefit-list">
+                    ${evaluation.improvement_checklist.map((item) => `<li>${item}</li>`).join('\n                    ')}
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-title">${isWeakIdea ? 'One Stronger Rewrite' : 'Enhanced Version'}</div>
                 <strong>${evaluation.reframed_idea.title}</strong>
                 <p>${evaluation.reframed_idea.description}</p>
                 <ul class="benefit-list">
@@ -400,6 +541,7 @@ export function generateEvaluationEmail(
                 `).join('\n                ')}
             </div>
 
+            ${!isWeakIdea ? `
             <div class="section">
                 <div class="section-title">💡 Related Automation Ideas</div>
                 <p>Based on your submission, here are three related opportunities to explore:</p>
@@ -416,8 +558,19 @@ export function generateEvaluationEmail(
                 <div class="section-title">🎯 Overall Assessment</div>
                 <p>${evaluation.evaluation_summary}</p>
             </div>
+            ` : ''}
 
-            <p style="margin-top: 30px;">Keep the ideas coming! Every submission helps us build a smarter, more automated organization.</p>
+            <div class="section">
+                <div class="section-title">On-Topic Links</div>
+                ${externalLinks.length > 0 ? `
+                <p>See how others are discussing similar automations:</p>
+                <ul>
+                    ${externalLinks.map((link) => `<li><a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.title}</a> <span style="color: #666;">(${link.source})</span></li>`).join('\n                    ')}
+                </ul>
+                ` : '<p>No Reddit links found this time. Try resubmitting with more specific keywords.</p>'}
+            </div>
+
+            <p style="margin-top: 30px;">Keep submitting ideas. Even rough drafts become stronger when they are specific and measurable.</p>
 
             <p style="margin-top: 20px;">
                 <strong>Ready to submit more ideas?</strong><br>

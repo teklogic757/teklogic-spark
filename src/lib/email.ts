@@ -21,6 +21,7 @@ export type EmailRecipient = string | string[]
 
 export interface SendEmailOptions {
     to: EmailRecipient
+    bcc?: EmailRecipient
     subject: string
     html: string
     replyTo?: string
@@ -38,6 +39,13 @@ export interface EmailResult {
     provider: string
     recipient: EmailRecipient
     originalRecipient: EmailRecipient
+}
+
+export interface CombinedIdeaReviewEmailOptions {
+    to: string
+    bcc?: EmailRecipient
+    subject: string
+    html: string
 }
 
 export const summarizeEmailResult = (result: EmailResult): string => {
@@ -192,6 +200,7 @@ async function sendViaSMTP(
         const info = await transporter.sendMail({
             from: `"Teklogic Spark AI" <${process.env.EMAIL_USER}>`,
             to: recipientEmail,
+            bcc: options.bcc,
             subject: subject,
             html: options.html,
             replyTo: options.replyTo || 'support@teklogic.net',
@@ -255,6 +264,7 @@ async function sendViaResend(
         const { data, error } = await resend.emails.send({
             from: 'Teklogic Spark AI <noreply@teklogic.net>',
             to: recipientEmail,
+            bcc: options.bcc,
             subject: isOverridden
                 ? `[TEST - Original: ${originalLabel}] ${options.subject}`
                 : options.subject,
@@ -297,6 +307,15 @@ async function sendViaResend(
             error: errorMessage,
         })
     }
+}
+
+export async function sendCombinedIdeaReviewEmail(options: CombinedIdeaReviewEmailOptions): Promise<EmailResult> {
+    return sendEmail({
+        to: options.to,
+        bcc: options.bcc,
+        subject: options.subject,
+        html: options.html,
+    })
 }
 
 /**

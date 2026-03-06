@@ -9,10 +9,9 @@ const mocks = vi.hoisted(() => ({
   getClientIpRateLimitIdentifier: vi.fn(),
   buildScopedRateLimitIdentifier: vi.fn(),
   evaluateIdea: vi.fn(),
-  generateEvaluationEmail: vi.fn(),
-  sendEvaluationEmail: vi.fn(),
-  sendAdminNotification: vi.fn(),
+  sendCombinedIdeaReviewEmail: vi.fn(),
   summarizeEmailResult: vi.fn(),
+  findRelevantRedditLinks: vi.fn(),
   cookies: vi.fn(),
 }))
 
@@ -29,13 +28,16 @@ vi.mock('@/lib/rate-limiter', () => ({
 
 vi.mock('@/lib/ai-evaluator', () => ({
   evaluateIdea: mocks.evaluateIdea,
-  generateEvaluationEmail: mocks.generateEvaluationEmail,
+  generateEvaluationEmail: vi.fn(() => '<html>evaluation</html>'),
 }))
 
 vi.mock('@/lib/email', () => ({
-  sendEvaluationEmail: mocks.sendEvaluationEmail,
-  sendAdminNotification: mocks.sendAdminNotification,
+  sendCombinedIdeaReviewEmail: mocks.sendCombinedIdeaReviewEmail,
   summarizeEmailResult: mocks.summarizeEmailResult,
+}))
+
+vi.mock('@/lib/reddit-links', () => ({
+  findRelevantRedditLinks: mocks.findRelevantRedditLinks,
 }))
 
 vi.mock('next/headers', () => ({
@@ -78,13 +80,15 @@ function mockDefaultExternalServices() {
     },
     criteria_scores: [],
     related_suggestions: [],
+    coaching_feedback: 'Add concrete operational details.',
+    improvement_checklist: ['Define the exact trigger event.'],
+    resource_topics: ['AI onboarding automation'],
     canonical_score_details: null,
     model_overall_score: 82,
     evaluation_summary: 'Strong fit for onboarding workflows.',
   })
-  mocks.generateEvaluationEmail.mockReturnValue('<html>evaluation</html>')
-  mocks.sendEvaluationEmail.mockResolvedValue({ status: 'delivered' })
-  mocks.sendAdminNotification.mockResolvedValue({ status: 'delivered' })
+  mocks.sendCombinedIdeaReviewEmail.mockResolvedValue({ status: 'delivered' })
+  mocks.findRelevantRedditLinks.mockResolvedValue([])
   mocks.summarizeEmailResult.mockReturnValue('ok')
 }
 
@@ -276,8 +280,7 @@ describe('submitIdeaFlow', () => {
 
     mocks.createClient.mockResolvedValue(userClient)
     mocks.createAdminClient.mockResolvedValue(adminClient)
-    mocks.sendEvaluationEmail.mockRejectedValue(new Error('smtp outage'))
-    mocks.sendAdminNotification.mockRejectedValue(new Error('webhook timeout'))
+    mocks.sendCombinedIdeaReviewEmail.mockRejectedValue(new Error('smtp outage'))
 
     const result = await submitIdeaFlow(createValidFormData(), 'desktop')
 
