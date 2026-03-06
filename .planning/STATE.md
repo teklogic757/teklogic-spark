@@ -1,8 +1,8 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: verifying
+milestone: v1.1
+milestone_name: Trust And Isolation Hardening
+status: phase_9_complete
 stopped_at: Completed 09-03-PLAN.md
 last_updated: "2026-03-06T05:06:53.590Z"
 last_activity: 2026-03-04 - Executed Phase 8 durable abuse controls and captured runtime verification steps
@@ -24,22 +24,23 @@ See: `.planning/PROJECT.md` (updated 2026-03-03)
 
 ## Current Position
 
-Phase: 8 implemented
-Plan: 08-03 complete
-Status: Awaiting Phase 8 human verification
-Last activity: 2026-03-04 - Executed Phase 8 durable abuse controls and captured runtime verification steps
+Phase: 9 complete
+Plan: 09-03 complete
+Status: Phase 9 executed and documented; milestone closeout pending Phase 8 runtime verification
+Last activity: 2026-03-06 - Executed Phase 9 test baseline and join cleanup plans with summaries and verification notes
 
 ## Status
 
 - v1.0 Production Readiness remains archived in `.planning/milestones/`
-- v1.1 execution is active with Phases 5 through 7 completed and verified
+- v1.1 execution is active with Phases 5, 6, 7, and 9 completed in code/docs
 - Phase 8 code changes are implemented, but the phase is not closed until the new durable limiter migration is applied and manually verified
-- Phase 9 remains queued behind Phase 8 runtime verification
+- Phase 9 now includes committed Vitest infrastructure plus regression coverage for score integrity, tenant boundaries, submit flow boundaries, and workshop join behavior
 - A post-v1.1 milestone is now reserved for Vercel and public-internet deployment hardening before go-live
 - Phase 6 now centralizes tenant request access, scopes training-video reads, and removes avoidable service-role leaderboard access
 - Phase 7 now routes desktop and mobile submissions through `src/lib/submit-flow.ts`, with explicit preparation, persistence, and post-persist boundaries
 - Phase 8 now adds a Postgres-backed durable limiter RPC, route cutovers for existing throttles, and explicit guest/workshop/attachment guards
-- `npm run lint` passes with pre-existing warnings, and `npm run build` still reaches the repository's existing production env-policy guard after successful compile and type-check
+- `npm run test:ci` now passes with Phase 9 regression suites
+- `npm run build` still reaches the repository's existing production env-policy guard after successful compile/type-check (`NEXT_PUBLIC_SITE_URL` missing and `TEST_EMAIL_OVERRIDE` restricted in production mode)
 
 ## Workflow
 
@@ -53,9 +54,9 @@ Last activity: 2026-03-04 - Executed Phase 8 durable abuse controls and captured
 
 - Apply `supabase/migrations/20260304_add_durable_rate_limits.sql`
 - Review `.planning/phases/08-durable-abuse-controls/08-VERIFICATION.md`
+- Review `.planning/phases/09-test-baseline-and-join-cleanup/09-VERIFICATION.md`
 - `$gsd-verify-work 8`
-- After Phase 8 is verified, start Phase 9 with `$gsd-plan-phase 9` or `$gsd-execute-phase 9` if it is already planned
-- Complete v1.1 before using `$gsd-new-milestone` for the queued deployment hardening milestone
+- After Phase 8 manual verification is accepted, close out v1.1 and move to `$gsd-new-milestone` for deployment hardening
 
 ## Accumulated Context
 
@@ -69,7 +70,7 @@ Last activity: 2026-03-04 - Executed Phase 8 durable abuse controls and captured
 - In-memory rate limiting is not adequate for multi-instance deployment targets
 - Phase 8 planning targets a Supabase/Postgres-backed durable limiter rather than adding Redis for the current scale
 - Phase 8 execution implemented the durable limiter in code, but runtime validation still depends on applying the new migration and checking restart behavior
-- A test harness now needs to exist before expanding feature scope further
+- Phase 9 established Vitest test infrastructure and regression suites for score, tenant, submit-flow, and workshop join boundaries
 - Git hygiene and deployment hardening are now explicitly queued before the eventual Vercel rollout
 
 ## Session Continuity

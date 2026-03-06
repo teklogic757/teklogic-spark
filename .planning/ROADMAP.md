@@ -31,7 +31,7 @@ Goal: Restore trust in scoring, reduce over-broad privileged reads, harden criti
 - [x] Phase 6: Tenant Boundary Tightening - completed 2026-03-04
 - [x] Phase 7: Submission Flow Decomposition - completed 2026-03-04
 - [ ] Phase 8: Durable Abuse Controls (implemented 2026-03-04, pending verification)
-- [ ] Phase 9: Test Baseline And Join Cleanup
+- [x] Phase 9: Test Baseline And Join Cleanup - completed 2026-03-06
 
 ### Phase Details
 
@@ -106,12 +106,12 @@ Expected planning themes:
 
 ## Next Up
 
-**Phase 8: Durable Abuse Controls** - Apply the migration and complete runtime verification for the new durable limiter.
+**Phase 8: Durable Abuse Controls** - Apply the migration and complete runtime verification for the durable limiter, then close v1.1.
 
 1. Apply `supabase/migrations/20260304_add_durable_rate_limits.sql` to the active Supabase environment.
 2. Run the manual checks in `.planning/phases/08-durable-abuse-controls/08-VERIFICATION.md` or use `$gsd-verify-work 8`.
-3. After Phase 8 is verified and closed, move to the Phase 9 test baseline work.
+3. Confirm Phase 8 and Phase 9 verification artifacts are accepted (`08-VERIFICATION.md` and `09-VERIFICATION.md`).
 4. After v1.1 is complete, initialize the queued v1.2 deployment-security milestone before go-live hardening continues.
 
 ---
-*Last updated: 2026-03-04 after executing Phase 8 code changes (awaiting manual verification)*
+*Last updated: 2026-03-06 after executing Phase 9 and preparing final v1.1 verification closeout*
