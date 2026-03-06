@@ -30,7 +30,7 @@
 
 - [x] **TEST-01**: The repository includes an automated test runner and scripts that can execute the app's test suite in local development and CI.
 - [x] **TEST-02**: Automated tests cover score canonicalization, tenant-safe dashboard access, and the critical submission flow's success/failure boundaries.
-- [ ] **TEST-03**: The workshop join flow removes redundant query filters and has regression coverage or focused verification documentation.
+- [x] **TEST-03**: The workshop join flow removes redundant query filters and has regression coverage or focused verification documentation.
 
 ## v2 Requirements
 
@@ -72,7 +72,7 @@
 | RATE-02 | Phase 8 | Pending |
 | TEST-01 | Phase 9 | Complete |
 | TEST-02 | Phase 9 | Complete |
-| TEST-03 | Phase 9 | Pending |
+| TEST-03 | Phase 9 | Complete |
 | DSEC-01 | Milestone v1.2 (queued) | Queued |
 | DSEC-02 | Milestone v1.2 (queued) | Queued |
 | DSEC-03 | Milestone v1.2 (queued) | Queued |
