@@ -8,14 +8,11 @@ Teklogic Spark AI is a multi-tenant web app that turns AI workshop momentum into
 
 Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
 
-## Current Milestone: v1.1 Trust And Isolation Hardening
+## Current Milestone
 
-**Goal:** Restore trust in scoring, tighten tenant-safe access boundaries, and make critical submission flows easier to harden and verify.
+`v1.2 Internet Deployment Security Hardening` is next and not yet planned in phase detail.
 
-**Target features:**
-- Canonical weighted AI scoring drives persisted scores, points, and leaderboard behavior
-- Dashboard and training-video reads use least-privilege, tenant-safe data access patterns
-- Submission, rate limiting, and test infrastructure become production-safe and maintainable
+`v1.1 Trust And Isolation Hardening` was archived on 2026-03-07 with accepted runtime verification debt for durable limiter validation.
 
 ## Requirements
 
@@ -32,10 +29,8 @@ Organizations can reliably capture, score, and act on company-specific AI ideas 
 
 ### Active
 
-- [ ] Make weighted rubric scoring the only score that affects persisted results and points
-- [ ] Reduce privileged data access on dashboard paths and preserve tenant boundaries for current and future content
-- [ ] Break the submission pipeline into testable, lower-risk units and replace in-memory rate limiting with a shared store
-- [ ] Establish an automated test baseline around scoring, isolation, and critical submission/workshop flows
+- [ ] Close out `RATE-01` and `RATE-02` runtime verification by applying durable limiter migration and passing all checks in `08-UAT.md`
+- [ ] Plan and execute v1.2 internet deployment hardening requirements (`DSEC-01` through `DSEC-05`)
 
 ### Out of Scope
 
@@ -50,16 +45,17 @@ This is a brownfield Next.js 15 App Router application backed by Supabase for au
 ## Current State
 
 - Shipped milestone: `v1.0 Production Readiness` on 2026-03-03
-- Completed scope: 4 phases, 10 plans, 23 documented tasks
+- Archived milestone: `v1.1 Trust And Isolation Hardening` on 2026-03-07 (closed with known verification gaps)
 - Operational baseline: `npm run lint` and `npm run build` pass, with only non-blocking existing warnings
 - Recent architectural additions: shared email contract, digest workflow, admin-managed training videos, admin audit-event persistence, sanitized server logging
-- New milestone focus: `v1.1 Trust And Isolation Hardening` addresses correctness drift, broader-than-needed service-role reads, submit-flow coupling, non-durable rate limiting, and missing automated tests
+- Open verification debt: durable limiter runtime verification remains pending in `.planning/phases/08-durable-abuse-controls/08-UAT.md`
+- New milestone focus: `v1.2 Internet Deployment Security Hardening` before internet-facing deployment
 
 ## Next Milestone Goals
 
-- Make score calculation and point awards deterministic against the documented weighted rubric
-- Narrow privileged reads so tenant boundaries remain explicit and future schema changes do not create silent leaks
-- Create a safer platform baseline before adding new engagement or analytics surface area
+- Enforce production-safe environment and secret handling across local, CI, and Vercel deploy targets
+- Lock down public-facing auth/session behavior, headers, and privileged server surfaces before go-live
+- Carry unresolved durable limiter runtime verification to completion as first-class release gating
 
 ## Queued Milestone After v1.1: v1.2 Internet Deployment Security Hardening
 
@@ -91,4 +87,4 @@ This is a brownfield Next.js 15 App Router application backed by Supabase for au
 | Skip standalone research for v1.1 planning | This milestone is driven by concrete repo issues rather than a new domain or feature category | [x] Good |
 
 ---
-*Last updated: 2026-03-04 after queuing the post-v1.1 deployment security milestone*
+*Last updated: 2026-03-07 after archiving v1.1 and preparing v1.2 planning*

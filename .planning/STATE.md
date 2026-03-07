@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Trust And Isolation Hardening
-status: phase_9_complete
+milestone: v1.2
+milestone_name: Internet Deployment Security Hardening
+status: between_milestones
 stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-03-06T05:06:53.590Z"
-last_activity: 2026-03-04 - Executed Phase 8 durable abuse controls and captured runtime verification steps
+last_updated: "2026-03-07T07:34:29.410Z"
+last_activity: 2026-03-06 - Executed Phase 9 test baseline and join cleanup plans with summaries and verification notes
 progress:
   total_phases: 9
   completed_phases: 9
@@ -17,23 +17,23 @@ progress:
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-03-03)
+See: `.planning/PROJECT.md` (updated 2026-03-07)
 
 **Core value:** Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
-**Current focus:** Phase 8 implementation is complete in code and now awaits runtime verification before milestone v1.1 can advance to Phase 9.
+**Current focus:** Start v1.2 planning while carrying forward unresolved Phase 8 runtime verification debt (`RATE-01`, `RATE-02`).
 
 ## Current Position
 
-Phase: 9 complete
-Plan: 09-03 complete
-Status: Phase 9 executed and documented; milestone closeout pending Phase 8 runtime verification
-Last activity: 2026-03-06 - Executed Phase 9 test baseline and join cleanup plans with summaries and verification notes
+Phase: none active
+Plan: none active
+Status: v1.1 archived; between milestones and ready for `$gsd-new-milestone`
+Last activity: 2026-03-07 - Archived v1.1 milestone and recorded accepted verification gaps
 
 ## Status
 
 - v1.0 Production Readiness remains archived in `.planning/milestones/`
-- v1.1 execution is active with Phases 5, 6, 7, and 9 completed in code/docs
-- Phase 8 code changes are implemented, but the phase is not closed until the new durable limiter migration is applied and manually verified
+- v1.1 Trust And Isolation Hardening is archived in `.planning/milestones/`
+- Phase 8 durable limiter code is implemented, but runtime verification remains open in `08-UAT.md`
 - Phase 9 now includes committed Vitest infrastructure plus regression coverage for score integrity, tenant boundaries, submit flow boundaries, and workshop join behavior
 - A post-v1.1 milestone is now reserved for Vercel and public-internet deployment hardening before go-live
 - Phase 6 now centralizes tenant request access, scopes training-video reads, and removes avoidable service-role leaderboard access
@@ -52,11 +52,8 @@ Last activity: 2026-03-06 - Executed Phase 9 test baseline and join cleanup plan
 
 ## Next Command
 
-- Apply `supabase/migrations/20260304_add_durable_rate_limits.sql`
-- Review `.planning/phases/08-durable-abuse-controls/08-VERIFICATION.md`
-- Review `.planning/phases/09-test-baseline-and-join-cleanup/09-VERIFICATION.md`
-- `$gsd-verify-work 8`
-- After Phase 8 manual verification is accepted, close out v1.1 and move to `$gsd-new-milestone` for deployment hardening
+- `$gsd-new-milestone`
+- Carry `RATE-01` and `RATE-02` runtime verification closure into the new milestone as explicit tasks
 
 ## Accumulated Context
 
@@ -80,4 +77,4 @@ Stopped at: Completed 09-03-PLAN.md
 Resume file: None
 
 ---
-*Last updated: 2026-03-06 after session resume*
+*Last updated: 2026-03-07 after archiving v1.1 with accepted gaps*
