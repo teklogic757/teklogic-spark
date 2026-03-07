@@ -1,13 +1,59 @@
 # Roadmap: Teklogic Spark AI
 
 **Created:** 2026-03-03
-**Mode:** Between milestones (v1.1 archived)
+**Mode:** Active milestone planning
 
 ## Milestones
 
 - [x] **v1.0 Production Readiness** - Phases 1-4 (shipped 2026-03-03)
-- [x] **v1.1 Trust And Isolation Hardening** - Phases 5-9 (archived 2026-03-07, closed with known verification gaps)
-- [ ] **v1.2 Internet Deployment Security Hardening** - next milestone (not yet roadmapped)
+- [x] **v1.1 Trust And Isolation Hardening** - Phases 5-9 (archived 2026-03-07)
+- [ ] **v1.2 Internet Deployment Security Hardening** - Phases 10-12 (planned 2026-03-07)
+
+## Active Milestone
+
+**v1.2 Internet Deployment Security Hardening**
+
+Goal: Make Teklogic Spark AI safe for public internet deployment by hardening repository/deployment hygiene, public security boundaries, and go-live verification.
+
+### Phase Summary
+
+| # | Phase | Goal | Requirements | Success Criteria |
+|---|-------|------|--------------|------------------|
+| 10 | Repository And Secret Hygiene | Remove deployment foot-guns by enforcing clean repo and environment secret discipline | DSEC-01, DSEC-02 | 3 |
+| 11 | Public Surface And Privilege Hardening | Apply internet-safe headers/session behavior and constrain privileged admin/service-role surfaces | DSEC-03, DSEC-04 | 3 |
+| 12 | Go-Live Verification And Durable Limiter Closeout | Finalize production checklist and close carried RATE runtime verification debt | DSEC-05, RATE-01, RATE-02 | 3 |
+
+### Active Phase Progress
+
+- [ ] Phase 10: Repository And Secret Hygiene
+- [ ] Phase 11: Public Surface And Privilege Hardening
+- [ ] Phase 12: Go-Live Verification And Durable Limiter Closeout
+
+### Phase Details
+
+**Phase 10: Repository And Secret Hygiene**  
+Goal: Ensure deployable builds run from managed environment configuration and clean repository boundaries.
+Requirements: DSEC-01, DSEC-02
+Success criteria:
+1. Production code paths reject local-only secret overrides and rely on managed environment variables.
+2. Repository hygiene rules prevent committing secrets, local caches, generated artifacts, and local agent tooling.
+3. CI/Vercel-oriented build entrypoints validate required environment configuration before deployment.
+
+**Phase 11: Public Surface And Privilege Hardening**  
+Goal: Reduce internet-facing risk by hardening session and privilege boundaries.
+Requirements: DSEC-03, DSEC-04
+Success criteria:
+1. Security headers and cookie behavior are explicitly set for public internet operation.
+2. Redirect, auth callback, and login flows enforce safe host/origin behavior under production deployment.
+3. Admin/service-role access paths are documented and constrained to minimum required operations.
+
+**Phase 12: Go-Live Verification And Durable Limiter Closeout**  
+Goal: Produce a complete go-live gate and close Phase 8 runtime verification debt.
+Requirements: DSEC-05, RATE-01, RATE-02
+Success criteria:
+1. A concrete go-live checklist is documented and executable for secrets, credentials, Vercel env setup, and final smoke tests.
+2. Durable limiter migration and runtime verification checks pass for restart and multi-instance behavior.
+3. Workshop join and guest/attachment-adjacent submit throttling are manually verified as durable and enforced.
 
 ## Archived Milestones
 
@@ -23,10 +69,6 @@
 Archive files:
 - `.planning/milestones/v1.1-ROADMAP.md`
 - `.planning/milestones/v1.1-REQUIREMENTS.md`
-
-Known gaps accepted at close:
-- `RATE-01` and `RATE-02` runtime verification remains open in `.planning/phases/08-durable-abuse-controls/08-UAT.md`
-- No standalone `v1.1` milestone audit artifact was created
 
 </details>
 
@@ -46,11 +88,12 @@ Archive files:
 
 ## Next Up
 
-Start the next milestone cycle:
+**Phase 10: Repository And Secret Hygiene** - lock deployment hygiene and secret management first, then harden public surface behavior.
 
-`$gsd-new-milestone`
-
-Then carry forward unresolved verification debt as explicit requirements/tasks in v1.2 planning.
+1. Audit environment variable usage and remove production-incompatible local overrides.
+2. Finalize `.gitignore`/repo hygiene for safe remote clone and CI/Vercel builds.
+3. Run a clean build/deploy-readiness check with required env validation.
+4. Proceed to `$gsd-discuss-phase 10` (or `$gsd-plan-phase 10` to skip discussion).
 
 ---
-*Last updated: 2026-03-07 after archiving v1.1 with accepted verification gaps*
+*Last updated: 2026-03-07 after starting v1.2 milestone planning*
