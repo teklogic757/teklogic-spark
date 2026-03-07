@@ -1,38 +1,35 @@
 # Requirements: Teklogic Spark AI
 
-**Defined:** 2026-03-03
+**Defined:** 2026-03-07
 **Core Value:** Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
+**Milestone:** v1.2 Internet Deployment Security Hardening
 
 ## v1 Requirements
 
-### Scoring Integrity
+Requirements committed for milestone v1.2.
 
-- [x] **SCOR-01**: Submitted ideas persist a canonical AI score derived from the documented weighted criterion rubric rather than the model's standalone overall score.
-- [x] **SCOR-02**: Points, leaderboard ranking, and any score-based UI all use the same canonical weighted score source.
+### Repository And Secret Hygiene
 
-### Tenant Isolation
+- [ ] **DSEC-01**: Production deployments load secrets from managed environment variables only, with development-only overrides explicitly disabled outside local environments.
+- [ ] **DSEC-02**: The repository excludes secrets, local caches, generated artifacts, and local agent tooling so a fresh remote clone is safe for CI and Vercel builds.
 
-- [x] **SECU-01**: Dashboard data reads use the least-privilege Supabase client needed for each dataset, with service-role access limited to explicitly justified server-only exceptions.
-- [x] **SECU-02**: Training-video reads use a scoped query contract that remains safe if videos become organization-specific later.
-- [x] **SECU-03**: Dashboard server code removes unsafe `as any` escapes where typed access patterns can express the real data boundary.
+### Public Surface Security
 
-### Submission Pipeline
+- [ ] **DSEC-03**: Public-facing routes use production-safe security headers, cookie behavior, and redirect handling suitable for internet exposure.
+- [ ] **DSEC-04**: Admin and service-role capabilities remain explicitly constrained and documented so deployment does not widen privileged access by accident.
 
-- [x] **SUBM-01**: Idea submission is split into composable server-side units for validation, context loading, AI evaluation, uploads, persistence, point updates, and notifications.
-- [x] **SUBM-02**: Non-critical side effects (such as email dispatch) cannot cause a valid idea submission to be lost after persistence succeeds.
+### Go-Live Readiness
 
-### Abuse Controls
+- [ ] **DSEC-05**: A go-live checklist covers key rotation, test credential cleanup, Vercel environment setup, and final production verification steps.
 
-- [ ] **RATE-01**: Guest and authenticated submission rate limits use a shared durable store that works consistently across multi-instance deployments.
-- [ ] **RATE-02**: Rate-limit enforcement remains explicit for file-upload and workshop submission paths that currently depend on the in-memory limiter.
+### Carried Verification Debt
 
-### Quality Safety Net
-
-- [x] **TEST-01**: The repository includes an automated test runner and scripts that can execute the app's test suite in local development and CI.
-- [x] **TEST-02**: Automated tests cover score canonicalization, tenant-safe dashboard access, and the critical submission flow's success/failure boundaries.
-- [x] **TEST-03**: The workshop join flow removes redundant query filters and has regression coverage or focused verification documentation.
+- [ ] **RATE-01**: Guest and authenticated submission rate limits use a shared durable store that works consistently across multi-instance deployments (close via runtime verification).
+- [ ] **RATE-02**: Rate-limit enforcement remains explicit for file-upload and workshop submission paths that currently depend on the in-memory limiter (close via runtime verification).
 
 ## v2 Requirements
+
+Deferred to future milestone(s).
 
 ### Collaboration And Analytics
 
@@ -41,49 +38,31 @@
 - **ANLY-01**: Admins can view milestone-level analytics on idea volume, scoring trends, and engagement.
 - **CAMP-01**: Admins can configure time-boxed campaign windows with clear start and end rules.
 
-### Internet Deployment Security Hardening
-
-- [ ] **DSEC-01**: Production deployments load secrets from managed environment variables only, with development-only overrides explicitly disabled outside local environments.
-- [ ] **DSEC-02**: The repository excludes secrets, local caches, generated artifacts, and local agent tooling so a fresh remote clone is safe for CI and Vercel builds.
-- [ ] **DSEC-03**: Public-facing routes use production-safe security headers, cookie behavior, and redirect handling suitable for internet exposure.
-- [ ] **DSEC-04**: Admin and service-role capabilities remain explicitly constrained and documented so deployment does not widen privileged access by accident.
-- [ ] **DSEC-05**: A go-live checklist covers key rotation, test credential cleanup, Vercel environment setup, and final production verification steps.
-
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| New end-user engagement features in this milestone | Correctness and platform trust issues are higher priority than adding surface area |
-| Re-platforming away from Next.js/Supabase | The current architecture is stable enough; the issue is implementation discipline, not stack choice |
-| Full distributed-scale redesign beyond a durable limiter backend | Current scale is still modest, so this milestone should fix the weakest operational point without broad infrastructure churn |
+| New end-user engagement features in v1.2 | Deployment hardening and verification closure are higher-priority release gates |
+| Re-platforming away from Next.js/Supabase | Current stack is stable enough; risk is in deployment/security discipline |
+| Broad distributed systems redesign | Current scale does not justify infra expansion beyond durable limiter verification |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCOR-01 | Phase 5 | Complete |
-| SCOR-02 | Phase 5 | Complete |
-| SECU-01 | Phase 6 | Complete |
-| SECU-02 | Phase 6 | Complete |
-| SECU-03 | Phase 6 | Complete |
-| SUBM-01 | Phase 7 | Complete |
-| SUBM-02 | Phase 7 | Complete |
-| RATE-01 | Phase 8 | Pending |
-| RATE-02 | Phase 8 | Pending |
-| TEST-01 | Phase 9 | Complete |
-| TEST-02 | Phase 9 | Complete |
-| TEST-03 | Phase 9 | Complete |
-| DSEC-01 | Milestone v1.2 (queued) | Queued |
-| DSEC-02 | Milestone v1.2 (queued) | Queued |
-| DSEC-03 | Milestone v1.2 (queued) | Queued |
-| DSEC-04 | Milestone v1.2 (queued) | Queued |
-| DSEC-05 | Milestone v1.2 (queued) | Queued |
+| DSEC-01 | Phase 10 | Pending |
+| DSEC-02 | Phase 10 | Pending |
+| DSEC-03 | Phase 11 | Pending |
+| DSEC-04 | Phase 11 | Pending |
+| DSEC-05 | Phase 12 | Pending |
+| RATE-01 | Phase 12 | Pending |
+| RATE-02 | Phase 12 | Pending |
 
 **Coverage:**
-- v1 requirements: 17 total
-- Mapped to phases: 12
-- Unmapped: 5
+- v1 requirements: 7 total
+- Mapped to phases: 7
+- Unmapped: 0
 
 ---
-*Requirements defined: 2026-03-03*
-*Last updated: 2026-03-07 during v1.1 milestone archival reconciliation*
+*Requirements defined: 2026-03-07*
+*Last updated: 2026-03-07 after starting milestone v1.2*
