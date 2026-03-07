@@ -8,11 +8,14 @@ Teklogic Spark AI is a multi-tenant web app that turns AI workshop momentum into
 
 Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
 
-## Current Milestone
+## Current Milestone: v1.2 Internet Deployment Security Hardening
 
-`v1.2 Internet Deployment Security Hardening` is next and not yet planned in phase detail.
+**Goal:** Make the app safe for internet-facing Vercel deployment by hardening secret handling, public security boundaries, and go-live verification discipline.
 
-`v1.1 Trust And Isolation Hardening` was archived on 2026-03-07 with accepted runtime verification debt for durable limiter validation.
+**Target features:**
+- Production-safe environment and secret handling with explicit validation for deploy targets
+- Public-surface hardening for headers, auth/session behavior, and redirect safety
+- Go-live checklist execution, including closure of carried durable-limiter runtime verification debt
 
 ## Requirements
 
@@ -87,4 +90,4 @@ This is a brownfield Next.js 15 App Router application backed by Supabase for au
 | Skip standalone research for v1.1 planning | This milestone is driven by concrete repo issues rather than a new domain or feature category | [x] Good |
 
 ---
-*Last updated: 2026-03-07 after archiving v1.1 and preparing v1.2 planning*
+*Last updated: 2026-03-07 after starting v1.2 Internet Deployment Security Hardening*

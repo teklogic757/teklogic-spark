@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Internet Deployment Security Hardening
-status: between_milestones
-stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-03-07T07:34:29.410Z"
-last_activity: 2026-03-06 - Executed Phase 9 test baseline and join cleanup plans with summaries and verification notes
+status: phase_10_not_started
+stopped_at: Milestone initialized
+last_updated: "2026-03-07T08:09:00.000Z"
+last_activity: 2026-03-07 - Initialized milestone v1.2 roadmap and requirements
 progress:
-  total_phases: 9
+  total_phases: 12
   completed_phases: 9
   total_plans: 25
   completed_plans: 25
@@ -20,19 +20,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-07)
 
 **Core value:** Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
-**Current focus:** Start v1.2 planning while carrying forward unresolved Phase 8 runtime verification debt (`RATE-01`, `RATE-02`).
+**Current focus:** Phase 10 planning for deployment/secret hygiene, while carrying unresolved `RATE-01` and `RATE-02` runtime verification debt.
 
 ## Current Position
 
-Phase: none active
-Plan: none active
-Status: v1.1 archived; between milestones and ready for `$gsd-new-milestone`
-Last activity: 2026-03-07 - Archived v1.1 milestone and recorded accepted verification gaps
+Phase: 10 not started
+Plan: -
+Status: Milestone v1.2 initialized; requirements and roadmap defined
+Last activity: 2026-03-07 - Initialized milestone v1.2 with phases 10-12
 
 ## Status
 
 - v1.0 Production Readiness remains archived in `.planning/milestones/`
 - v1.1 Trust And Isolation Hardening is archived in `.planning/milestones/`
+- v1.2 Internet Deployment Security Hardening phases 10-12 are now defined in `.planning/ROADMAP.md`
 - Phase 8 durable limiter code is implemented, but runtime verification remains open in `08-UAT.md`
 - Phase 9 now includes committed Vitest infrastructure plus regression coverage for score integrity, tenant boundaries, submit flow boundaries, and workshop join behavior
 - A post-v1.1 milestone is now reserved for Vercel and public-internet deployment hardening before go-live
@@ -52,8 +53,8 @@ Last activity: 2026-03-07 - Archived v1.1 milestone and recorded accepted verifi
 
 ## Next Command
 
-- `$gsd-new-milestone`
-- Carry `RATE-01` and `RATE-02` runtime verification closure into the new milestone as explicit tasks
+- `$gsd-discuss-phase 10`
+- (or) `$gsd-plan-phase 10` to plan directly without discussion
 
 ## Accumulated Context
 
