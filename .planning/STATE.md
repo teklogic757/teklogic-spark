@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Internet Deployment Security Hardening
-status: phase_10_not_started
-stopped_at: Milestone initialized
-last_updated: "2026-03-07T08:09:00.000Z"
-last_activity: 2026-03-07 - Initialized milestone v1.2 roadmap and requirements
+status: phase_11_context_gathered
+stopped_at: Phase 11 context gathered
+last_updated: "2026-03-11T20:59:59.129Z"
+last_activity: 2026-03-11 - Captured Phase 11 context after Phase 10 execution
 progress:
   total_phases: 12
-  completed_phases: 9
-  total_plans: 25
-  completed_plans: 25
+  completed_phases: 10
+  total_plans: 28
+  completed_plans: 28
 ---
 
 # State
@@ -20,14 +20,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-07)
 
 **Core value:** Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
-**Current focus:** Phase 10 planning for deployment/secret hygiene, while carrying unresolved `RATE-01` and `RATE-02` runtime verification debt.
+**Current focus:** Phase 11 planning for public-surface hardening, while Phase 10 verification and carried `RATE-01` / `RATE-02` runtime checks remain open release gates.
 
 ## Current Position
 
-Phase: 10 not started
-Plan: -
-Status: Milestone v1.2 initialized; requirements and roadmap defined
-Last activity: 2026-03-07 - Initialized milestone v1.2 with phases 10-12
+Phase: 10 verification pending
+Plan: 10-03 complete
+Status: All Phase 10 plans executed; operator env cleanup and fresh-clone verification still required
+Last activity: 2026-03-11 - Added canonical env/site-url contract, repo hygiene command, and deploy preflight workflow
 
 ## Status
 
@@ -53,8 +53,8 @@ Last activity: 2026-03-07 - Initialized milestone v1.2 with phases 10-12
 
 ## Next Command
 
-- `$gsd-discuss-phase 10`
-- (or) `$gsd-plan-phase 10` to plan directly without discussion
+- `$gsd-plan-phase 11`
+- (or) finish Phase 10 operator checks and use `$gsd-verify-work 10`
 
 ## Accumulated Context
 
@@ -70,12 +70,16 @@ Last activity: 2026-03-07 - Initialized milestone v1.2 with phases 10-12
 - Phase 8 execution implemented the durable limiter in code, but runtime validation still depends on applying the new migration and checking restart behavior
 - Phase 9 established Vitest test infrastructure and regression suites for score, tenant, submit-flow, and workshop join boundaries
 - Git hygiene and deployment hardening are now explicitly queued before the eventual Vercel rollout
+- Phase 10 code execution is complete with summaries and verification artifacts in `.planning/phases/10-repository-and-secret-hygiene/`
+- `npm run check:repo-hygiene` now passes and reports ignored local-only artifacts without failing the clone
+- `npm run check:deploy-env` now enforces production-safe env rules and rejects local-only override vars
+- `npm run build` is now intentionally blocked by unsafe local env values until `TEST_EMAIL_OVERRIDE` / `EMAIL_TO` are removed and `NEXT_PUBLIC_SITE_URL` is set
 
 ## Session Continuity
 
-Last session: 2026-03-06T05:06:30.452Z
-Stopped at: Completed 09-03-PLAN.md
-Resume file: None
+Last session: 2026-03-11T20:59:59.125Z
+Stopped at: Phase 11 context gathered
+Resume file: .planning/phases/11-public-surface-and-privilege-hardening/11-CONTEXT.md
 
 ---
-*Last updated: 2026-03-07 after archiving v1.1 with accepted gaps*
+*Last updated: 2026-03-11 after executing Phase 10 plans*
