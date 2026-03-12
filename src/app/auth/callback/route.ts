@@ -1,15 +1,41 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { resolveAuthRedirect } from '@/lib/auth-redirect'
 import { NextResponse } from 'next/server'
-import { errorLog } from '@/lib/server-log'
+import { errorLog, warnLog } from '@/lib/server-log'
+
+async function getPostAuthFallbackPath(userId: string | undefined) {
+    if (!userId) {
+        return '/login'
+    }
+
+    const supabaseAdmin = await createAdminClient()
+    const { data: userData } = await supabaseAdmin
+        .from('users')
+        .select('organization_id')
+        .eq('id', userId)
+        .single()
+
+    const organizationId = (userData as { organization_id: string } | null)?.organization_id
+    if (!organizationId) {
+        return '/login'
+    }
+
+    const { data: organizationData } = await supabaseAdmin
+        .from('organizations')
+        .select('slug')
+        .eq('id', organizationId)
+        .single()
+
+    const slug = (organizationData as { slug: string } | null)?.slug
+    return slug ? `/${slug}/dashboard` : '/login'
+}
 
 export async function GET(request: Request) {
-    const { searchParams, origin } = new URL(request.url)
+    const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
-    // "next" check for security, ensure it starts with /
-    let next = searchParams.get('next') ?? '/dashboard'
-    if (!next.startsWith('/')) {
-        next = '/dashboard'
-    }
+    const next = searchParams.get('next')
+    const errorSearchParams = new URLSearchParams()
+    const errorRedirectPath = '/auth/auth-code-error'
 
     if (code) {
         const supabase = await createClient()
@@ -18,26 +44,47 @@ export async function GET(request: Request) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error) {
-            const forwardedHost = request.headers.get('x-forwarded-host')
-            const isLocalEnv = process.env.NODE_ENV === 'development'
+            const {
+                data: { user },
+            } = await supabase.auth.getUser()
+            const fallbackPath = await getPostAuthFallbackPath(user?.id)
+            const redirectTarget = resolveAuthRedirect(next, {
+                request,
+                fallbackPath,
+            })
 
-            if (isLocalEnv) {
-                return NextResponse.redirect(`${origin}${next}`)
-            } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}${next}`)
-            } else {
-                return NextResponse.redirect(`${origin}${next}`)
+            if (redirectTarget.rejectedReason) {
+                warnLog('auth.callback_invalid_redirect', {
+                    fallbackPath,
+                    next,
+                    reason: redirectTarget.rejectedReason,
+                    userId: user?.id ?? null,
+                })
             }
+
+            return NextResponse.redirect(redirectTarget.destination)
         } else {
             errorLog('auth.callback_exchange_failed', error, {
                 next,
             })
 
-            // Redirect to error page with details
-            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(error.name)}&description=${encodeURIComponent(error.message)}`)
+            errorSearchParams.set('error', error.name)
+            errorSearchParams.set('description', error.message)
+            const errorRedirect = resolveAuthRedirect(`${errorRedirectPath}?${errorSearchParams.toString()}`, {
+                request,
+                fallbackPath: errorRedirectPath,
+            })
+            return NextResponse.redirect(errorRedirect.destination)
         }
     }
 
-    // No code present
-    return NextResponse.redirect(`${origin}/auth/auth-code-error?error=NoCode&description=No+auth+code+provided`)
+    errorSearchParams.set('error', 'NoCode')
+    errorSearchParams.set('description', 'No auth code provided')
+
+    const missingCodeRedirect = resolveAuthRedirect(`${errorRedirectPath}?${errorSearchParams.toString()}`, {
+        request,
+        fallbackPath: errorRedirectPath,
+    })
+
+    return NextResponse.redirect(missingCodeRedirect.destination)
 }

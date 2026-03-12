@@ -1,5 +1,5 @@
-import { verifyAdmin } from './actions'
-import { redirect } from 'next/navigation'
+import { getAdminAccessState } from './actions'
+import { notFound, redirect } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import { Button } from '@/components/ui/button'
 import { LogOut, ArrowLeft } from 'lucide-react'
@@ -9,10 +9,14 @@ export default async function AdminLayout({
 }: {
     children: React.ReactNode
 }) {
-    const isAdmin = await verifyAdmin()
+    const access = await getAdminAccessState()
 
-    if (!isAdmin) {
-        redirect('/')
+    if (access.status === 'anonymous') {
+        redirect('/login')
+    }
+
+    if (access.status === 'unauthorized') {
+        notFound()
     }
 
     return (

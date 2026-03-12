@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { buildAuthCallbackUrl } from '@/lib/auth-redirect'
 
 export default function GlobalLoginForm() {
     const [email, setEmail] = useState('')
@@ -24,9 +25,9 @@ export default function GlobalLoginForm() {
     useEffect(() => {
         const checkSession = async () => {
             const client = createClient()
-            const { data: { session } } = await client.auth.getSession()
-            if (session?.user) {
-                const url = await getUserDashboardUrl(session.user.id)
+            const { data: { user } } = await client.auth.getUser()
+            if (user) {
+                const url = await getUserDashboardUrl(user.id)
                 if (url) {
                     router.push(url)
                     router.refresh()
@@ -45,7 +46,9 @@ export default function GlobalLoginForm() {
             const emailInput = formData.get('email') as string
             const passwordInput = formData.get('password') as string
 
-            const redirectUrl = `${window.location.origin}/auth/callback`
+            const redirectUrl = buildAuthCallbackUrl({
+                currentOrigin: window.location.origin,
+            })
 
             if (isMagicLink || !passwordInput) {
                 // Magic Link Authentication

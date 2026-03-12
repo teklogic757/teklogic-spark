@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/next-build/
 /out/
 /.next_old_v2/
 
@@ -42,6 +43,7 @@ nul
 # local agent tooling
 /.claude/
 /.codex/
+/.cursor/
 
 # Supabase local state
 /supabase/.temp/
@@ -49,9 +51,18 @@ nul
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+.envrc
+.envrc.local
 
 # vercel
 .vercel
+
+# local planning recovery artifacts
+/.planning/recovery/
+
+# build and cache state
+/.turbo/
+/.cache/
 
 # typescript
 *.tsbuildinfo

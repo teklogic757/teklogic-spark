@@ -27,8 +27,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ clie
     }
 
     if (tenantContext.redirectTo) {
-        if (tenantContext.redirectTo === '/login') {
+        if (tenantContext.redirectReason === 'missing_user_profile') {
             errorLog('dashboard.user_profile_missing', 'User profile missing', { userId: tenantContext.user.id })
+        } else if (tenantContext.redirectReason === 'missing_user_organization') {
+            errorLog('dashboard.user_organization_missing', 'User organization missing', { userId: tenantContext.user.id })
+        } else if (tenantContext.redirectReason === 'wrong_tenant') {
+            errorLog('dashboard.wrong_tenant_redirect', 'User is visiting the wrong tenant dashboard', {
+                userId: tenantContext.user.id,
+                redirectTo: tenantContext.redirectTo,
+                requestedClientId: client_id,
+            })
         }
 
         redirect(tenantContext.redirectTo)

@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Loader2, Mail, Lock, LogIn, ArrowRight } from 'lucide-react'
+import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { buildAuthCallbackUrl } from '@/lib/auth-redirect'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
@@ -31,7 +32,10 @@ export default function LoginPage() {
         const passwordInput = formData.get('password') as string
 
         const supabase = createClient()
-        const redirectUrl = `${window.location.origin}/auth/callback?next=/${clientId}/dashboard`
+        const redirectUrl = buildAuthCallbackUrl({
+            currentOrigin: window.location.origin,
+            next: `/${clientId}/dashboard`,
+        })
 
         if (isMagicLink || !passwordInput) {
             // Magic Link Logic

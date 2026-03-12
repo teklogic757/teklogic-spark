@@ -5,10 +5,10 @@ import { getUserDashboardUrl } from './login/actions'
 export default async function Home() {
   const supabase = await createClient()
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (session?.user) {
-    const dashboardUrl = await getUserDashboardUrl(session.user.id)
+  if (user) {
+    const dashboardUrl = await getUserDashboardUrl(user.id)
     if (dashboardUrl) {
       redirect(dashboardUrl)
     }

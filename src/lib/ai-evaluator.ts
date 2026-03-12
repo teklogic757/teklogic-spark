@@ -8,6 +8,7 @@
 import OpenAI from 'openai'
 import { sanitizePromptInput, PROMPT_INJECTION_DEFENSE } from './prompt-sanitizer'
 import { computeCanonicalWeightedScore, type CanonicalScoreDetails } from './score'
+import { buildAbsoluteAppUrl } from './site-url'
 
 export interface EvaluationCriteria {
     name: string
@@ -446,6 +447,7 @@ export function generateEvaluationEmail(
         externalLinks?: ExternalResourceLink[]
     }
 ): string {
+    const dashboardUrl = buildAbsoluteAppUrl('/')
     const isWeakIdea = evaluation.overall_score < 60
     const primarySuggestion = evaluation.related_suggestions[0]
     const externalLinks = options?.externalLinks ?? []
@@ -574,7 +576,7 @@ export function generateEvaluationEmail(
 
             <p style="margin-top: 20px;">
                 <strong>Ready to submit more ideas?</strong><br>
-                <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 10px;">Go to Dashboard</a>
+                <a href="${dashboardUrl}" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 10px;">Go to Dashboard</a>
             </p>
         </div>
 

@@ -63,6 +63,7 @@ export interface TenantRequestContext {
   userProfile: DashboardUserProfile
   organization: DashboardOrganization
   redirectTo: string | null
+  redirectReason: 'missing_user_profile' | 'missing_user_organization' | 'wrong_tenant' | null
 }
 
 export interface DashboardPageData {
@@ -157,30 +158,71 @@ async function getOrganizationBySlug(
   return mapOrganization(adminScopedRow)
 }
 
-async function getOrganizationSlugById(
+async function getOrganizationById(
   organizationId: string,
   userClient: Awaited<ReturnType<typeof createClient>>
-): Promise<string | null> {
+): Promise<DashboardOrganization | null> {
+  const selectFields =
+    'id, name, slug, contest_starts_at, contest_ends_at, contest_config, is_leaderboard_enabled'
+
   const userScopedResult = await userClient
     .from('organizations')
-    .select('slug')
+    .select(selectFields)
     .eq('id', organizationId)
     .maybeSingle()
-  const userScopedRow = userScopedResult.data as Pick<OrganizationRow, 'slug'> | null
+  const userScopedRow = userScopedResult.data as Pick<
+    OrganizationRow,
+    'id' | 'name' | 'slug' | 'contest_starts_at' | 'contest_ends_at' | 'contest_config' | 'is_leaderboard_enabled'
+  > | null
 
-  if (userScopedRow?.slug) {
-    return userScopedRow.slug
+  if (userScopedRow) {
+    return mapOrganization(userScopedRow)
   }
 
   const adminClient = await createAdminClient()
   const adminScopedResult = await adminClient
     .from('organizations')
-    .select('slug')
+    .select(selectFields)
     .eq('id', organizationId)
     .maybeSingle()
-  const adminScopedRow = adminScopedResult.data as Pick<OrganizationRow, 'slug'> | null
+  const adminScopedRow = adminScopedResult.data as Pick<
+    OrganizationRow,
+    'id' | 'name' | 'slug' | 'contest_starts_at' | 'contest_ends_at' | 'contest_config' | 'is_leaderboard_enabled'
+  > | null
 
-  return adminScopedRow?.slug ?? null
+  if (!adminScopedRow) {
+    return null
+  }
+
+  return mapOrganization(adminScopedRow)
+}
+
+async function getCurrentUserProfile(
+  userId: string,
+  userClient: Awaited<ReturnType<typeof createClient>>
+): Promise<DashboardUserProfile | null> {
+  const selectFields = 'organization_id, role, full_name'
+
+  const userScopedResult = await userClient
+    .from('users')
+    .select(selectFields)
+    .eq('id', userId)
+    .maybeSingle()
+  const userScopedRow = userScopedResult.data as DashboardUserProfile | null
+
+  if (userScopedRow) {
+    return userScopedRow
+  }
+
+  const adminClient = await createAdminClient()
+  const adminScopedResult = await adminClient
+    .from('users')
+    .select(selectFields)
+    .eq('id', userId)
+    .maybeSingle()
+  const adminScopedRow = adminScopedResult.data as DashboardUserProfile | null
+
+  return adminScopedRow
 }
 
 async function getDashboardIdeas(
@@ -226,26 +268,57 @@ export async function getTenantRequestContext(clientId: string): Promise<TenantR
     return null
   }
 
-  const { data: userProfile } = await supabase
-    .from('users')
-    .select('organization_id, role, full_name')
-    .eq('id', user.id)
-    .maybeSingle()
-  const parsedUserProfile = userProfile as DashboardUserProfile | null
+  const parsedUserProfile = await getCurrentUserProfile(user.id, supabase)
 
   if (!parsedUserProfile) {
-    return null
+    const routeOrganization = await getOrganizationBySlug(clientId, supabase)
+    if (!routeOrganization) {
+      return null
+    }
+
+    return {
+      clientId,
+      supabase,
+      user: {
+        id: user.id,
+        email: user.email ?? null,
+      },
+      userProfile: {
+        organization_id: routeOrganization.id,
+        role: 'user',
+        full_name: null,
+      },
+      organization: routeOrganization,
+      redirectTo: '/login',
+      redirectReason: 'missing_user_profile',
+    }
   }
 
-  const organization = await getOrganizationBySlug(clientId, supabase)
-  if (!organization) {
-    return null
+  const userOrganization = await getOrganizationById(parsedUserProfile.organization_id, supabase)
+  if (!userOrganization) {
+    const routeOrganization = await getOrganizationBySlug(clientId, supabase)
+    if (!routeOrganization) {
+      return null
+    }
+
+    return {
+      clientId,
+      supabase,
+      user: {
+        id: user.id,
+        email: user.email ?? null,
+      },
+      userProfile: parsedUserProfile,
+      organization: routeOrganization,
+      redirectTo: '/login',
+      redirectReason: 'missing_user_organization',
+    }
   }
 
-  const redirectSlug =
-    parsedUserProfile.organization_id === organization.id
+  const redirectTo =
+    userOrganization.slug === clientId
       ? null
-      : await getOrganizationSlugById(parsedUserProfile.organization_id, supabase)
+      : `/${userOrganization.slug}/dashboard`
 
   return {
     clientId,
@@ -255,8 +328,9 @@ export async function getTenantRequestContext(clientId: string): Promise<TenantR
       email: user.email ?? null,
     },
     userProfile: parsedUserProfile,
-    organization,
-    redirectTo: redirectSlug ? `/${redirectSlug}/dashboard` : '/login',
+    organization: userOrganization,
+    redirectTo,
+    redirectReason: redirectTo ? 'wrong_tenant' : null,
   }
 }
 

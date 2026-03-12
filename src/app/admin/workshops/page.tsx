@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCanonicalSiteOrigin } from '@/lib/site-url'
 import WorkshopsPage from './workshops-client'
 
 export const dynamic = 'force-dynamic'
@@ -39,7 +40,7 @@ export default async function Page() {
 
     const codes = (codesData as WorkshopCode[] | null) || []
 
-    const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+    const baseUrl = getCanonicalSiteOrigin()
 
     return <WorkshopsPage codes={codes} baseUrl={baseUrl} />
 }

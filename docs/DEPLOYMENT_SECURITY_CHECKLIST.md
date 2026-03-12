@@ -14,6 +14,7 @@ This checklist is the minimum go-live baseline before exposing Teklogic Spark AI
 ## Auth And Data Access
 
 - Review all `createAdminClient()` call sites and confirm each one is server-only and still required.
+- Compare the current privileged surfaces to `docs/privileged-access.md` and resolve any undocumented usage before go-live.
 - Verify tenant-boundary reads only return organization-scoped data for dashboard, leaderboard, prompts, training, and submit flows.
 - Confirm Supabase RLS policies match the current application access model.
 - Replace any remaining default or weak test-user passwords before production use.

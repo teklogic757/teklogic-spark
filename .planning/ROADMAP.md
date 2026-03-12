@@ -25,8 +25,8 @@ Goal: Make Teklogic Spark AI safe for public internet deployment by hardening re
 
 ### Active Phase Progress
 
-- [ ] Phase 10: Repository And Secret Hygiene
-- [ ] Phase 11: Public Surface And Privilege Hardening
+- [ ] Phase 10: Repository And Secret Hygiene (plans executed 2026-03-11; verification pending env cleanup)
+- [ ] Phase 11: Public Surface And Privilege Hardening (plans executed 2026-03-11; verification pending deployed-host checks)
 - [ ] Phase 12: Go-Live Verification And Durable Limiter Closeout
 
 ### Phase Details
@@ -88,12 +88,12 @@ Archive files:
 
 ## Next Up
 
-**Phase 10: Repository And Secret Hygiene** - lock deployment hygiene and secret management first, then harden public surface behavior.
+**Phase 11 Verification** - run the manual public-surface checks on a production-like HTTPS host after clearing the existing Phase 10 env blockers.
 
-1. Audit environment variable usage and remove production-incompatible local overrides.
-2. Finalize `.gitignore`/repo hygiene for safe remote clone and CI/Vercel builds.
-3. Run a clean build/deploy-readiness check with required env validation.
-4. Proceed to `$gsd-discuss-phase 10` (or `$gsd-plan-phase 10` to skip discussion).
+1. Remove `TEST_EMAIL_OVERRIDE` and `EMAIL_TO` from deploy-like env files or hosted env configuration.
+2. Set a real HTTPS `NEXT_PUBLIC_SITE_URL`.
+3. Run the Phase 11 manual checks from `.planning/phases/11-public-surface-and-privilege-hardening/11-VERIFICATION.md`.
+4. Proceed to `$gsd-verify-work 11` or continue into Phase 12 once verification closes.
 
 ---
-*Last updated: 2026-03-07 after starting v1.2 milestone planning*
+*Last updated: 2026-03-11 after executing Phase 11 plans*

@@ -23,6 +23,7 @@ const eslintConfig = defineConfig([
     ".next_old_v2/**",
     ".planning/**",
     ".next/**",
+    "next-build/**",
     "docs/**",
     "out/**",
     "build/**",

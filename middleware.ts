@@ -1,28 +1,18 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import {
+    applyPublicSecurityHeaders,
+    getPublicAuthCookieOptions,
+    isRequestHttps,
+} from '@/lib/security-headers'
 
 // Mobile device detection regex (includes tablets)
 const MOBILE_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|tablet/i
 
-function applySecurityHeaders(response: NextResponse, request: NextRequest) {
-    response.headers.set('x-content-type-options', 'nosniff')
-    response.headers.set('x-frame-options', 'DENY')
-    response.headers.set('referrer-policy', 'strict-origin-when-cross-origin')
-    response.headers.set('x-dns-prefetch-control', 'off')
-    response.headers.set('cross-origin-opener-policy', 'same-origin')
-    response.headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()')
-
-    const forwardedProto = request.headers.get('x-forwarded-proto')
-    if (process.env.NODE_ENV === 'production' && forwardedProto === 'https') {
-        response.headers.set('strict-transport-security', 'max-age=31536000; includeSubDomains')
-    }
-
-    return response
-}
-
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
+    const isHttps = isRequestHttps(request)
 
     // Detect mobile device
     const userAgent = request.headers.get('user-agent') || ''
@@ -43,6 +33,7 @@ export async function middleware(request: NextRequest) {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
+            cookieOptions: getPublicAuthCookieOptions({ isHttps }),
             cookies: {
                 getAll() {
                     return request.cookies.getAll()
@@ -73,7 +64,7 @@ export async function middleware(request: NextRequest) {
     // Allow access to submit page if workshop cookie is present, even if no user
     if (!user && workshopOrgId && pathname.includes('/submit')) {
         // Optionally validate the orgId format or just let it pass to the page which will validate
-        return applySecurityHeaders(supabaseResponse, request)
+        return applyPublicSecurityHeaders(supabaseResponse, { isHttps })
     }
 
     // Set device type header for downstream components
@@ -91,18 +82,18 @@ export async function middleware(request: NextRequest) {
             // Redirect /[client_id]/dashboard to /[client_id]/m/
             if (pathname === `/${clientId}/dashboard`) {
                 const mobileUrl = new URL(`/${clientId}/m/`, request.url)
-                return applySecurityHeaders(NextResponse.redirect(mobileUrl), request)
+                return applyPublicSecurityHeaders(NextResponse.redirect(mobileUrl), { isHttps })
             }
 
             // Redirect /[client_id]/submit to /[client_id]/m/submit
             if (pathname === `/${clientId}/submit`) {
                 const mobileUrl = new URL(`/${clientId}/m/submit`, request.url)
-                return applySecurityHeaders(NextResponse.redirect(mobileUrl), request)
+                return applyPublicSecurityHeaders(NextResponse.redirect(mobileUrl), { isHttps })
             }
         }
     }
 
-    return applySecurityHeaders(supabaseResponse, request)
+    return applyPublicSecurityHeaders(supabaseResponse, { isHttps })
 }
 
 export const config = {

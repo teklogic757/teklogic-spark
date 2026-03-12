@@ -35,11 +35,19 @@ function logNotificationResult(label: string, result: EmailResult) {
  * Used as a security guard clause at the start of Admin Server Actions.
  */
 export async function verifyAdmin() {
+    const access = await getAdminAccessState()
+    return access.status === 'authorized'
+}
+
+export async function getAdminAccessState() {
     const supabase = await createClient()
     const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error || !user) {
-        return false
+        return {
+            status: 'anonymous' as const,
+            userId: null,
+        }
     }
 
     const { data: userData } = await supabase
@@ -49,7 +57,10 @@ export async function verifyAdmin() {
         .single()
 
     const userInfo = userData as { role: string } | null
-    return userInfo?.role === 'super_admin'
+    return {
+        status: userInfo?.role === 'super_admin' ? 'authorized' as const : 'unauthorized' as const,
+        userId: user.id,
+    }
 }
 
 // ORGANIZATIONS
@@ -474,7 +485,10 @@ export async function createInvitation(prevState: any, formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // Rate limiting
-    const rateLimitResult = rateLimitAction('createInvitation', user?.id)
+    const rateLimitResult = await rateLimitAction(
+        'createInvitation',
+        user?.id ? `user:${user.id}` : null
+    )
     if (rateLimitResult) {
         return { error: rateLimitResult.error }
     }

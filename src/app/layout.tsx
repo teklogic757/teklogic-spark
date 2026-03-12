@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Inter, Open_Sans } from "next/font/google"; // Brand Fonts
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { validateEnv } from "@/lib/env-validator";
 
-// Validate environment variables on server startup
-import "@/lib/env-validator";
+validateEnv();
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const openSans = Open_Sans({ subsets: ["latin"], variable: "--font-open-sans" });

@@ -50,10 +50,10 @@ Deferred to future milestone(s).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DSEC-01 | Phase 10 | Pending |
-| DSEC-02 | Phase 10 | Pending |
-| DSEC-03 | Phase 11 | Pending |
-| DSEC-04 | Phase 11 | Pending |
+| DSEC-01 | Phase 10 | Implemented in code; verification pending |
+| DSEC-02 | Phase 10 | Implemented in code; verification pending |
+| DSEC-03 | Phase 11 | Implemented in code; verification pending |
+| DSEC-04 | Phase 11 | Implemented in code; verification pending |
 | DSEC-05 | Phase 12 | Pending |
 | RATE-01 | Phase 12 | Pending |
 | RATE-02 | Phase 12 | Pending |
@@ -65,4 +65,4 @@ Deferred to future milestone(s).
 
 ---
 *Requirements defined: 2026-03-07*
-*Last updated: 2026-03-07 after starting milestone v1.2*
+*Last updated: 2026-03-11 after Phase 11 execution*

@@ -10,6 +10,8 @@
  */
 
 import nodemailer from 'nodemailer'
+import { getNotificationProvider, isProductionEnvironment } from './env-policy.mjs'
+import { buildAbsoluteAppUrl } from './site-url'
 
 export interface EmailAttachment {
     filename: string
@@ -128,6 +130,14 @@ function formatRecipientLabel(recipient: EmailRecipient): string {
     return normalizeRecipients(recipient).join(', ')
 }
 
+function getEmailOverrideRecipient(): string | undefined {
+    if (isProductionEnvironment(process.env)) {
+        return undefined
+    }
+
+    return process.env.TEST_EMAIL_OVERRIDE || process.env.EMAIL_TO
+}
+
 /**
  * Send an email via SMTP (Gmail) or Resend
  * In development, emails are redirected to TEST_EMAIL_OVERRIDE/EMAIL_TO if set
@@ -145,11 +155,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<EmailResult>
     }
 
     // Use test override if configured (for development)
-    const testOverride = process.env.TEST_EMAIL_OVERRIDE || process.env.EMAIL_TO
+    const testOverride = getEmailOverrideRecipient()
     const recipientEmail: EmailRecipient = testOverride || options.to
     const isOverridden = !!testOverride && !originalRecipients.includes(testOverride)
 
-    const provider = process.env.NOTIFICATION_PROVIDER || 'smtp'
+    const provider = getNotificationProvider(process.env)
 
     if (provider === 'smtp') {
         return sendViaSMTP(options, recipientEmail, isOverridden)
@@ -425,8 +435,7 @@ export async function sendWelcomeEmail(
     organizationName: string,
     organizationSlug: string
 ): Promise<EmailResult> {
-    const baseUrl = process.env.NEXT_PUBLIC_URL || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const loginUrl = `${baseUrl}/${organizationSlug}/login`
+    const loginUrl = buildAbsoluteAppUrl(`/${organizationSlug}/login`)
 
     const emailHtml = generateWelcomeEmailHtml(userName, organizationName, loginUrl)
 
@@ -638,8 +647,7 @@ export async function sendGuestWelcomeEmail(
     organizationName: string,
     organizationSlug: string
 ): Promise<EmailResult> {
-    const baseUrl = process.env.NEXT_PUBLIC_URL || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const signupUrl = `${baseUrl}/${organizationSlug}/login` // Direct them to login/signup page
+    const signupUrl = buildAbsoluteAppUrl(`/${organizationSlug}/login`)
 
     const emailHtml = generateGuestWelcomeEmailHtml(userName, organizationName, signupUrl)
 

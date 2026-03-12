@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:deploy": "npm run check:repo-hygiene && npm run check:deploy-env && next build",
     "start": "next start",
+    "check:repo-hygiene": "node scripts/check-repo-hygiene.mjs",
+    "check:deploy-env": "node scripts/check-deploy-env.mjs",
     "lint": "eslint",
     "test": "vitest",
     "test:watch": "vitest --watch",

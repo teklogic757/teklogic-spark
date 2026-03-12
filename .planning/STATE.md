@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Internet Deployment Security Hardening
-status: phase_11_context_gathered
-stopped_at: Phase 11 context gathered
-last_updated: "2026-03-11T20:59:59.129Z"
-last_activity: 2026-03-11 - Captured Phase 11 context after Phase 10 execution
+status: phase_11_executed
+stopped_at: Phase 11 executed; manual verification pending
+last_updated: "2026-03-11T23:10:00.000Z"
+last_activity: 2026-03-11 - Executed Phase 11 public-surface and privilege hardening
 progress:
   total_phases: 12
   completed_phases: 10
-  total_plans: 28
-  completed_plans: 28
+  total_plans: 31
+  completed_plans: 31
 ---
 
 # State
@@ -20,14 +20,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-07)
 
 **Core value:** Organizations can reliably capture, score, and act on company-specific AI ideas in a way that keeps employees engaged after the workshop ends.
-**Current focus:** Phase 11 planning for public-surface hardening, while Phase 10 verification and carried `RATE-01` / `RATE-02` runtime checks remain open release gates.
+**Current focus:** Run Phase 11 deployed-host verification, while Phase 10 env cleanup and carried `RATE-01` / `RATE-02` runtime checks remain open release gates.
 
 ## Current Position
 
-Phase: 10 verification pending
-Plan: 10-03 complete
-Status: All Phase 10 plans executed; operator env cleanup and fresh-clone verification still required
-Last activity: 2026-03-11 - Added canonical env/site-url contract, repo hygiene command, and deploy preflight workflow
+Phase: 11 executed
+Plan: 11-03 complete
+Status: All Phase 11 plans are executed with verification artifacts; manual deployed-host checks still remain alongside Phase 10 env cleanup
+Last activity: 2026-03-11 - Executed Phase 11 into shared header/cookie policy, safe auth redirects, and explicit admin denial behavior
 
 ## Status
 
@@ -41,7 +41,11 @@ Last activity: 2026-03-11 - Added canonical env/site-url contract, repo hygiene 
 - Phase 7 now routes desktop and mobile submissions through `src/lib/submit-flow.ts`, with explicit preparation, persistence, and post-persist boundaries
 - Phase 8 now adds a Postgres-backed durable limiter RPC, route cutovers for existing throttles, and explicit guest/workshop/attachment guards
 - `npm run test:ci` now passes with Phase 9 regression suites
-- `npm run build` still reaches the repository's existing production env-policy guard after successful compile/type-check (`NEXT_PUBLIC_SITE_URL` missing and `TEST_EMAIL_OVERRIDE` restricted in production mode)
+- Phase 10 code execution is complete with summaries and verification artifacts in `.planning/phases/10-repository-and-secret-hygiene/`
+- Phase 11 now has executed summaries and verification artifacts in `.planning/phases/11-public-surface-and-privilege-hardening/`
+- `npm run check:repo-hygiene` now passes and reports ignored local-only artifacts without failing the clone
+- `npm run check:deploy-env` now enforces production-safe env rules and rejects local-only override vars
+- `npm run build` is now intentionally blocked by unsafe local env values until `TEST_EMAIL_OVERRIDE` / `EMAIL_TO` are removed and `NEXT_PUBLIC_SITE_URL` is set
 
 ## Workflow
 
@@ -53,8 +57,8 @@ Last activity: 2026-03-11 - Added canonical env/site-url contract, repo hygiene 
 
 ## Next Command
 
-- `$gsd-plan-phase 11`
-- (or) finish Phase 10 operator checks and use `$gsd-verify-work 10`
+- `$gsd-verify-work 11`
+- (or) clear the Phase 10 env blockers and run the manual checks listed in `.planning/phases/11-public-surface-and-privilege-hardening/11-VERIFICATION.md`
 
 ## Accumulated Context
 
@@ -71,15 +75,16 @@ Last activity: 2026-03-11 - Added canonical env/site-url contract, repo hygiene 
 - Phase 9 established Vitest test infrastructure and regression suites for score, tenant, submit-flow, and workshop join boundaries
 - Git hygiene and deployment hardening are now explicitly queued before the eventual Vercel rollout
 - Phase 10 code execution is complete with summaries and verification artifacts in `.planning/phases/10-repository-and-secret-hygiene/`
+- Phase 11 execution added shared `security-headers` and `auth-redirect` helpers, explicit admin access-state handling, and a documented privileged-access inventory
 - `npm run check:repo-hygiene` now passes and reports ignored local-only artifacts without failing the clone
 - `npm run check:deploy-env` now enforces production-safe env rules and rejects local-only override vars
 - `npm run build` is now intentionally blocked by unsafe local env values until `TEST_EMAIL_OVERRIDE` / `EMAIL_TO` are removed and `NEXT_PUBLIC_SITE_URL` is set
 
 ## Session Continuity
 
-Last session: 2026-03-11T20:59:59.125Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-public-surface-and-privilege-hardening/11-CONTEXT.md
+Last session: 2026-03-11T22:50:35.655Z
+Stopped at: Phase 11 planned
+Resume file: .planning/phases/11-public-surface-and-privilege-hardening/11-VERIFICATION.md
 
 ---
-*Last updated: 2026-03-11 after executing Phase 10 plans*
+*Last updated: 2026-03-11 after executing Phase 11*

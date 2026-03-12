@@ -2,17 +2,15 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { rateLimitAction } from '@/lib/rate-limiter'
+import { getClientIpRateLimitIdentifier, rateLimitAction } from '@/lib/rate-limiter'
 import { LoginQuerySchema, validateInput } from '@/lib/validators'
-import { headers } from 'next/headers'
 
 export async function findOrganization(prevState: any, formData: FormData) {
     const query = formData.get('query') as string
 
-    // Rate limiting by IP (no user ID available yet)
-    const headersList = await headers()
-    const ip = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown'
-    const rateLimitResult = rateLimitAction('findOrganization', ip)
+    // Rate limiting by normalized client IP (no user ID available yet)
+    const ip = await getClientIpRateLimitIdentifier()
+    const rateLimitResult = await rateLimitAction('findOrganization', ip)
     if (rateLimitResult) {
         return { error: rateLimitResult.error }
     }

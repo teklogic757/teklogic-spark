@@ -53,19 +53,12 @@ cd teklogic-ideas
 npm install
 ```
 
-3. Create a `.env.local` file with the following variables:
+3. Create a `.env.local` file from `.env.example`:
 ```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key
-
-# Testing (Optional)
-TEST_EMAIL_OVERRIDE=your_test_email@example.com
+cp .env.example .env.local
 ```
+
+Populate the required values in `.env.local`. Keep `TEST_EMAIL_OVERRIDE` and `EMAIL_TO` local-only.
 
 4. Set up the database:
 ```bash
@@ -189,9 +182,24 @@ Database migrations are located in `src/scripts/`. Key files:
 ```bash
 npm run dev          # Start development server
 npm run build        # Production build
+npm run build:deploy # Repo hygiene + deploy env preflight + build
 npm run start        # Start production server
 npm run lint         # Run ESLint
+npm run check:repo-hygiene # Verify tracked-file and ignore-rule safety
+npm run check:deploy-env   # Validate production-style env configuration
 ```
+
+## Deployment Readiness
+
+Use the Phase 10 deployment contract before any CI or Vercel rollout:
+
+```bash
+npm run check:repo-hygiene
+npm run check:deploy-env
+npm run build:deploy
+```
+
+See [docs/deployment.md](./docs/deployment.md) for the full operator workflow.
 
 ## 📊 Database Schema
 
@@ -246,6 +254,11 @@ See [ROADMAP.md](./ROADMAP.md) for detailed feature planning.
 
 - [AGENTS.md](./AGENTS.md) - Detailed technical context for AI agents
 - [SETUP.md](./docs/SETUP.md) - Complete setup guide
+- [deployment.md](./docs/deployment.md) - Deploy preflight and Vercel/CI workflow
+- [executive-overview.md](./docs/executive-overview.md) - Non-technical product and feature overview
+- [technical-system-guide.md](./docs/technical-system-guide.md) - Internal technical walkthrough of the current system
+- [technical-roadmap-v1.2.md](./docs/technical-roadmap-v1.2.md) - Remaining engineering roadmap for the current milestone
+- [data-flow-diagram-prompts.md](./docs/data-flow-diagram-prompts.md) - Executive and technical prompts for generating DFD visuals
 
 ## 🤝 Contributing
 
